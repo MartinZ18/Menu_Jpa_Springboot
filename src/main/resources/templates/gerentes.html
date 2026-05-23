@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerentes — MenuJPA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+
+<div class="topbar">
+    <div class="topbar-logo">
+        <div class="topbar-logo-mark">MJ</div>
+        MenuJPA
+    </div>
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menú">
+        <i class="bi bi-list"></i>
+    </button>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<nav class="nav-sidebar">
+    <a href="/" class="nav-logo">
+        <div class="nav-logo-mark">MJ</div>
+        <div class="nav-logo-text">MenuJPA <span>Gestión gastronómica</span></div>
+    </a>
+    <div class="nav-section">
+        <span class="nav-section-label">Gestión</span>
+        <a href="/menus"     class="nav-link"><i class="bi bi-list-ul"></i><span>Menús</span></a>
+        <a href="/recetas"   class="nav-link"><i class="bi bi-card-list"></i><span>Recetas</span></a>
+        <a href="/alimentos" class="nav-link"><i class="bi bi-basket"></i><span>Alimentos</span></a>
+    </div>
+    <div class="nav-section">
+        <span class="nav-section-label">Personal</span>
+        <a href="/chefs"    class="nav-link"><i class="bi bi-person-badge"></i><span>Chefs</span></a>
+        <a href="/gerentes" class="nav-link active"><i class="bi bi-person-workspace"></i><span>Gerentes</span></a>
+    </div>
+</nav>
+
+<main class="page-content">
+    <header class="page-header">
+        <div>
+            <h1 class="page-title">Gerentes</h1>
+            <p class="page-subtitle">Responsables de los menús del restaurante</p>
+        </div>
+        <button class="btn btn-primary" onclick="abrirModal()">
+            <i class="bi bi-plus"></i> Nuevo Gerente
+        </button>
+    </header>
+
+    <div class="table-wrapper">
+        <div class="table-header">
+            <span class="table-title">Personal registrado</span>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Apellido, Nombre</th>
+                        <th>Cédula</th>
+                        <th>Teléfono</th>
+                        <th>Correo</th>
+                        <th>Nacimiento</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="bodyGerentes">
+                    <tr><td colspan="7" style="padding:0"><div class="empty-state"><div class="spinner"></div></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Gerente -->
+<div class="modal-overlay" id="modalGerenteOverlay">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitulo">Gerente</h3>
+            <button class="modal-close" onclick="modalHide('modalGerenteOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="gerenteId">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Nombre <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="nombre" placeholder="Nombre" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Apellido <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="apellido" placeholder="Apellido" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cédula / DNI</label>
+                    <input type="text" class="form-input" id="cedula" placeholder="Nro. documento" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" class="form-input" id="telefono" placeholder="261-1234567" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Correo</label>
+                    <input type="email" class="form-input" id="correo" placeholder="correo@ejemplo.com" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fecha de Nacimiento</label>
+                    <input type="date" class="form-input" id="fechaNacimiento">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalGerenteOverlay')">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarGerente()">
+                <i class="bi bi-check-lg"></i> Guardar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Eliminar -->
+<div class="modal-overlay" id="modalEliminarOverlay">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <h3 class="modal-title">Confirmar eliminación</h3>
+            <button class="modal-close" onclick="modalHide('modalEliminarOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body">
+            <p class="confirm-text">¿Eliminar este gerente? La acción no se puede deshacer.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalEliminarOverlay')">Cancelar</button>
+            <button class="btn btn-danger" id="btnConfirmarEliminar">
+                <i class="bi bi-trash"></i> Eliminar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/api.js}"></script>
+<script>
+const API = '/api/v1/gerentes';
+
+async function cargarGerentes() {
+    const data = await cargarConEstado(
+        () => apiFetch(API),
+        'bodyGerentes', 7,
+        'bi-person-workspace', 'No hay gerentes registrados'
+    );
+    if (!data || data.length === 0) return;
+
+    document.getElementById('bodyGerentes').innerHTML = data.map(g => `
+        <tr>
+            <td><span class="badge badge-default">${g.id}</span></td>
+            <td><strong>${g.apellido || '—'}</strong>${g.nombre ? ', ' + g.nombre : ''}</td>
+            <td>${g.cedula || '—'}</td>
+            <td>${g.telefono || '—'}</td>
+            <td>${g.correo || '—'}</td>
+            <td>${g.fechaNacimiento ? formatFecha(g.fechaNacimiento) : '—'}</td>
+            <td>
+                <div class="td-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="editarGerente(${g.id})" title="Editar">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="confirmarEliminar(${g.id})" title="Eliminar">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function abrirModal() {
+    ['gerenteId','nombre','apellido','cedula','telefono','correo','fechaNacimiento'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    document.getElementById('modalTitulo').textContent = 'Nuevo Gerente';
+    modalShow('modalGerenteOverlay');
+}
+
+async function editarGerente(id) {
+    const g = await apiFetch(`${API}/${id}`);
+    if (!g) return;
+    document.getElementById('gerenteId').value       = g.id;
+    document.getElementById('nombre').value          = g.nombre || '';
+    document.getElementById('apellido').value        = g.apellido || '';
+    document.getElementById('cedula').value          = g.cedula || '';
+    document.getElementById('telefono').value        = g.telefono || '';
+    document.getElementById('correo').value          = g.correo || '';
+    document.getElementById('fechaNacimiento').value = g.fechaNacimiento ? g.fechaNacimiento.split('T')[0] : '';
+    document.getElementById('modalTitulo').textContent = 'Editar Gerente';
+    modalShow('modalGerenteOverlay');
+}
+
+async function guardarGerente() {
+    const nombre   = document.getElementById('nombre').value.trim();
+    const apellido = document.getElementById('apellido').value.trim();
+    const correo   = document.getElementById('correo').value.trim();
+    const fechaNac = document.getElementById('fechaNacimiento').value;
+
+    if (!Validar.requerido(nombre,   'Nombre'))   return;
+    if (!Validar.requerido(apellido, 'Apellido')) return;
+    if (!Validar.email(correo))                   return;
+    if (!Validar.fechaPasada(fechaNac, 'Fecha de Nacimiento')) return;
+
+    const id   = document.getElementById('gerenteId').value;
+    const body = {
+        nombre, apellido,
+        cedula:          document.getElementById('cedula').value.trim() || null,
+        telefono:        document.getElementById('telefono').value.trim() || null,
+        correo:          correo || null,
+        fechaNacimiento: fechaNac || null
+    };
+    if (id) body.id = parseInt(id);
+
+    const result = await apiFetch(id ? `${API}/${id}` : API, id ? 'PUT' : 'POST', body);
+    if (result) {
+        modalHide('modalGerenteOverlay');
+        mostrarAlerta(id ? 'Gerente actualizado correctamente.' : 'Gerente creado correctamente.', 'success');
+        cargarGerentes();
+    }
+}
+
+function confirmarEliminar(id) {
+    document.getElementById('btnConfirmarEliminar').onclick = async () => {
+        const ok = await apiFetch(`${API}/${id}`, 'DELETE');
+        modalHide('modalEliminarOverlay');
+        if (ok) {
+            mostrarAlerta('Gerente eliminado correctamente.', 'success');
+            cargarGerentes();
+        }
+    };
+    modalShow('modalEliminarOverlay');
+}
+
+cargarGerentes();
+</script>
+</body>
+</html>

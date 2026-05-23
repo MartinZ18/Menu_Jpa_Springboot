@@ -1,0 +1,74 @@
+# ========================
+# Build / Maven
+# ========================
+target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ========================
+# IDE — IntelliJ IDEA
+# ========================
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# ========================
+# IDE — NetBeans
+# ========================
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# ========================
+# IDE — Eclipse / VS Code
+# ========================
+.settings/
+.classpath
+.project
+.factorypath
+.vscode/
+bin/
+!**/src/main/**
+!**/src/test/**
+
+# ========================
+# Configuración sensible
+# ========================
+application-local.properties
+application-prod.properties
+*.env
+.env
+.env.*
+secrets/
+*.key
+*.pem
+*.p12
+*.jks
+
+# ========================
+# Sistema operativo
+# ========================
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# ========================
+# Logs y temporales
+# ========================
+*.log
+logs/
+spring.log
+*.tmp
+*.bak
+*.swp
+*~

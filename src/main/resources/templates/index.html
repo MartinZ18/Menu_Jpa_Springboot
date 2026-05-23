@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MenuJPA — Gestión Gastronómica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+
+<div class="topbar">
+    <div class="topbar-logo">
+        <div class="topbar-logo-mark">MJ</div>
+        MenuJPA
+    </div>
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menú">
+        <i class="bi bi-list"></i>
+    </button>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<nav class="nav-sidebar">
+    <a href="/" class="nav-logo">
+        <div class="nav-logo-mark">MJ</div>
+        <div class="nav-logo-text">MenuJPA <span>Gestión gastronómica</span></div>
+    </a>
+    <div class="nav-section">
+        <span class="nav-section-label">Gestión</span>
+        <a href="/menus"     class="nav-link"><i class="bi bi-list-ul"></i><span>Menús</span></a>
+        <a href="/recetas"   class="nav-link"><i class="bi bi-card-list"></i><span>Recetas</span></a>
+        <a href="/alimentos" class="nav-link"><i class="bi bi-basket"></i><span>Alimentos</span></a>
+    </div>
+    <div class="nav-section">
+        <span class="nav-section-label">Personal</span>
+        <a href="/chefs"    class="nav-link"><i class="bi bi-person-badge"></i><span>Chefs</span></a>
+        <a href="/gerentes" class="nav-link"><i class="bi bi-person-workspace"></i><span>Gerentes</span></a>
+    </div>
+</nav>
+
+<main class="page-content">
+
+    <div class="hero">
+        <p class="hero-eyebrow"><i class="bi bi-circle-fill" style="font-size:0.45rem"></i> Panel de control</p>
+        <h1 class="hero-title">Sistema de Gestión<br><span class="hero-accent">de Menú</span></h1>
+        <p class="hero-desc">Administrá el restaurante desde un solo lugar. Menús, recetas, alimentos y personal unificados.</p>
+        <div class="hero-actions">
+            <a href="/menus"   class="btn btn-primary"><i class="bi bi-list-ul"></i> Ver Menús</a>
+            <a href="/recetas" class="btn btn-ghost"><i class="bi bi-card-list"></i> Ver Recetas</a>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-list-ul"></i></div>
+            <div class="stat-label">Menús</div>
+            <div class="stat-value" id="statMenus">—</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-card-list"></i></div>
+            <div class="stat-label">Recetas</div>
+            <div class="stat-value" id="statRecetas">—</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-person-badge"></i></div>
+            <div class="stat-label">Chefs</div>
+            <div class="stat-value" id="statChefs">—</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-basket"></i></div>
+            <div class="stat-label">Alimentos</div>
+            <div class="stat-value" id="statAlimentos">—</div>
+        </div>
+    </div>
+
+    <div class="module-section section-gestion">
+        <div class="module-section-header">
+            <div class="module-section-dot"></div>
+            <span class="module-section-label">Gestión</span>
+            <div class="module-section-line"></div>
+        </div>
+        <div class="module-grid module-grid-3">
+            <a href="/menus" class="module-card">
+                <i class="bi bi-arrow-right module-card-arrow"></i>
+                <div class="module-card-icon-wrap"><i class="bi bi-list-ul"></i></div>
+                <div class="module-card-title">Menús</div>
+                <div class="module-card-desc">Creá y gestioná los menús del restaurante. Asignales un gerente y agregá recetas.</div>
+            </a>
+            <a href="/recetas" class="module-card">
+                <i class="bi bi-arrow-right module-card-arrow"></i>
+                <div class="module-card-icon-wrap"><i class="bi bi-card-list"></i></div>
+                <div class="module-card-title">Recetas</div>
+                <div class="module-card-desc">Registrá recetas con descripción, dificultad, tiempo de preparación y alimentos.</div>
+            </a>
+            <a href="/alimentos" class="module-card">
+                <i class="bi bi-arrow-right module-card-arrow"></i>
+                <div class="module-card-icon-wrap"><i class="bi bi-basket"></i></div>
+                <div class="module-card-title">Alimentos</div>
+                <div class="module-card-desc">Gestioná el catálogo: platos fuertes, bebidas, postres y adicionales.</div>
+            </a>
+        </div>
+    </div>
+
+    <div class="module-section section-personal">
+        <div class="module-section-header">
+            <div class="module-section-dot"></div>
+            <span class="module-section-label">Personal</span>
+            <div class="module-section-line"></div>
+        </div>
+        <div class="module-grid module-grid-2">
+            <a href="/chefs" class="module-card">
+                <i class="bi bi-arrow-right module-card-arrow"></i>
+                <div class="module-card-icon-wrap"><i class="bi bi-person-badge"></i></div>
+                <div class="module-card-title">Chefs</div>
+                <div class="module-card-desc">Administrá el personal de cocina con su especialidad, experiencia y horarios.</div>
+            </a>
+            <a href="/gerentes" class="module-card">
+                <i class="bi bi-arrow-right module-card-arrow"></i>
+                <div class="module-card-icon-wrap"><i class="bi bi-person-workspace"></i></div>
+                <div class="module-card-title">Gerentes</div>
+                <div class="module-card-desc">Registrá los gerentes del restaurante que supervisan y aprueban los menús.</div>
+            </a>
+        </div>
+    </div>
+
+</main>
+
+<script th:src="@{/js/api.js}"></script>
+<script>
+async function cargarStats() {
+    const endpoints = [
+        { url: '/api/v1/menus',     id: 'statMenus' },
+        { url: '/api/v1/recetas',   id: 'statRecetas' },
+        { url: '/api/v1/chefs',     id: 'statChefs' },
+        { url: '/api/v1/alimentos', id: 'statAlimentos' }
+    ];
+    for (const { url, id } of endpoints) {
+        try {
+            const res  = await fetch(url);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            document.getElementById(id).textContent = Array.isArray(data) ? data.length : '?';
+        } catch {
+            document.getElementById(id).textContent = '—';
+        }
+    }
+}
+cargarStats();
+</script>
+</body>
+</html>

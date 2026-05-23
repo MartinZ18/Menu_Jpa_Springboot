@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chefs — MenuJPA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+
+<div class="topbar">
+    <div class="topbar-logo">
+        <div class="topbar-logo-mark">MJ</div>
+        MenuJPA
+    </div>
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menú">
+        <i class="bi bi-list"></i>
+    </button>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<nav class="nav-sidebar">
+    <a href="/" class="nav-logo">
+        <div class="nav-logo-mark">MJ</div>
+        <div class="nav-logo-text">MenuJPA <span>Gestión gastronómica</span></div>
+    </a>
+    <div class="nav-section">
+        <span class="nav-section-label">Gestión</span>
+        <a href="/menus"     class="nav-link"><i class="bi bi-list-ul"></i><span>Menús</span></a>
+        <a href="/recetas"   class="nav-link"><i class="bi bi-card-list"></i><span>Recetas</span></a>
+        <a href="/alimentos" class="nav-link"><i class="bi bi-basket"></i><span>Alimentos</span></a>
+    </div>
+    <div class="nav-section">
+        <span class="nav-section-label">Personal</span>
+        <a href="/chefs"    class="nav-link active"><i class="bi bi-person-badge"></i><span>Chefs</span></a>
+        <a href="/gerentes" class="nav-link"><i class="bi bi-person-workspace"></i><span>Gerentes</span></a>
+    </div>
+</nav>
+
+<main class="page-content">
+    <header class="page-header">
+        <div>
+            <h1 class="page-title">Chefs</h1>
+            <p class="page-subtitle">Personal de cocina del restaurante</p>
+        </div>
+        <button class="btn btn-primary" onclick="abrirModal()">
+            <i class="bi bi-plus"></i> Nuevo Chef
+        </button>
+    </header>
+
+    <div class="table-wrapper">
+        <div class="table-header">
+            <span class="table-title">Personal registrado</span>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Apellido, Nombre</th>
+                        <th>Cédula</th>
+                        <th>Especialidad</th>
+                        <th>Experiencia</th>
+                        <th>Salario</th>
+                        <th>Horario</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="bodyChefs">
+                    <tr><td colspan="8" style="padding: 0"><div class="empty-state"><div class="spinner"></div></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Chef -->
+<div class="modal-overlay" id="modalChefOverlay">
+    <div class="modal modal-xl">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitulo">Chef</h3>
+            <button class="modal-close" onclick="modalHide('modalChefOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="chefId">
+            <div class="form-grid form-grid-3">
+                <div class="form-section-label">Datos Personales</div>
+                <div class="form-group">
+                    <label class="form-label">Nombre <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="nombre" placeholder="Nombre" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Apellido <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="apellido" placeholder="Apellido" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cédula / DNI</label>
+                    <input type="text" class="form-input" id="cedula" placeholder="Nro. documento" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" class="form-input" id="telefono" placeholder="261-1234567" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Correo</label>
+                    <input type="email" class="form-input" id="correo" placeholder="correo@ejemplo.com" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fecha de Nacimiento</label>
+                    <input type="date" class="form-input" id="fechaNacimiento">
+                </div>
+
+                <div class="form-section-label">Datos Laborales</div>
+                <div class="form-group">
+                    <label class="form-label">Especialidad</label>
+                    <input type="text" class="form-input" id="especialidad" placeholder="Ej: Pastelería, Grill…" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Experiencia</label>
+                    <input type="text" class="form-input" id="experiencia" placeholder="Ej: 5 años" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Salario ($)</label>
+                    <input type="number" class="form-input" id="salario" placeholder="0.00" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fecha de Vinculación</label>
+                    <input type="date" class="form-input" id="fechaVinculacion">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Hora de Ingreso</label>
+                    <input type="time" class="form-input" id="horaIngreso">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Hora de Salida</label>
+                    <input type="time" class="form-input" id="horaSalida">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalChefOverlay')">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarChef()">
+                <i class="bi bi-check-lg"></i> Guardar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Eliminar -->
+<div class="modal-overlay" id="modalEliminarOverlay">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <h3 class="modal-title">Confirmar eliminación</h3>
+            <button class="modal-close" onclick="modalHide('modalEliminarOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body">
+            <p class="confirm-text">¿Eliminar este chef? La acción no se puede deshacer.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalEliminarOverlay')">Cancelar</button>
+            <button class="btn btn-danger" id="btnConfirmarEliminar">
+                <i class="bi bi-trash"></i> Eliminar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/api.js}"></script>
+<script>
+const API = '/api/v1/chefs';
+
+async function cargarChefs() {
+    const data = await cargarConEstado(
+        () => apiFetch(API),
+        'bodyChefs', 8,
+        'bi-person-badge', 'No hay chefs registrados'
+    );
+    if (!data || data.length === 0) return;
+
+    document.getElementById('bodyChefs').innerHTML = data.map(c => `
+        <tr>
+            <td><span class="badge badge-default">${c.id}</span></td>
+            <td><strong>${c.apellido || '—'}</strong>${c.nombre ? ', ' + c.nombre : ''}</td>
+            <td>${c.cedula || '—'}</td>
+            <td>${c.especialidad || '—'}</td>
+            <td>${c.experiencia || '—'}</td>
+            <td>${c.salario != null ? '$ ' + Number(c.salario).toLocaleString('es-AR') : '—'}</td>
+            <td>
+                ${c.horaIngreso ? `<span class="badge badge-default">${c.horaIngreso}</span>` : ''}
+                ${c.horaSalida  ? `<span class="badge badge-default">${c.horaSalida}</span>` : ''}
+                ${!c.horaIngreso && !c.horaSalida ? '—' : ''}
+            </td>
+            <td>
+                <div class="td-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="editarChef(${c.id})" title="Editar">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="confirmarEliminar(${c.id})" title="Eliminar">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+const CAMPOS = ['chefId','nombre','apellido','cedula','telefono','correo','fechaNacimiento',
+                'especialidad','experiencia','salario','fechaVinculacion','horaIngreso','horaSalida'];
+
+function limpiarModal() { CAMPOS.forEach(id => { document.getElementById(id).value = ''; }); }
+
+function abrirModal() {
+    limpiarModal();
+    document.getElementById('modalTitulo').textContent = 'Nuevo Chef';
+    modalShow('modalChefOverlay');
+}
+
+async function editarChef(id) {
+    const c = await apiFetch(`${API}/${id}`);
+    if (!c) return;
+    limpiarModal();
+    document.getElementById('chefId').value            = c.id;
+    document.getElementById('nombre').value            = c.nombre || '';
+    document.getElementById('apellido').value          = c.apellido || '';
+    document.getElementById('cedula').value            = c.cedula || '';
+    document.getElementById('telefono').value          = c.telefono || '';
+    document.getElementById('correo').value            = c.correo || '';
+    document.getElementById('especialidad').value      = c.especialidad || '';
+    document.getElementById('experiencia').value       = c.experiencia || '';
+    document.getElementById('salario').value           = c.salario || '';
+    document.getElementById('fechaNacimiento').value   = c.fechaNacimiento ? c.fechaNacimiento.split('T')[0] : '';
+    document.getElementById('fechaVinculacion').value  = c.fechaVinculacion ? c.fechaVinculacion.split('T')[0] : '';
+    document.getElementById('horaIngreso').value       = c.horaIngreso || '';
+    document.getElementById('horaSalida').value        = c.horaSalida || '';
+    document.getElementById('modalTitulo').textContent = 'Editar Chef';
+    modalShow('modalChefOverlay');
+}
+
+async function guardarChef() {
+    const nombre   = document.getElementById('nombre').value.trim();
+    const apellido = document.getElementById('apellido').value.trim();
+    const correo   = document.getElementById('correo').value.trim();
+    const salario  = document.getElementById('salario').value;
+    const fechaNac = document.getElementById('fechaNacimiento').value;
+
+    if (!Validar.requerido(nombre,   'Nombre'))   return;
+    if (!Validar.requerido(apellido, 'Apellido')) return;
+    if (!Validar.email(correo))                   return;
+    if (!Validar.numPositivo(salario, 'Salario')) return;
+    if (!Validar.fechaPasada(fechaNac, 'Fecha de Nacimiento')) return;
+
+    const id   = document.getElementById('chefId').value;
+    const body = {
+        nombre, apellido,
+        cedula:           document.getElementById('cedula').value.trim() || null,
+        telefono:         document.getElementById('telefono').value.trim() || null,
+        correo:           correo || null,
+        especialidad:     document.getElementById('especialidad').value.trim() || null,
+        experiencia:      document.getElementById('experiencia').value.trim() || null,
+        salario:          salario ? parseFloat(salario) : null,
+        fechaNacimiento:  fechaNac || null,
+        fechaVinculacion: document.getElementById('fechaVinculacion').value || null,
+        horaIngreso:      document.getElementById('horaIngreso').value || null,
+        horaSalida:       document.getElementById('horaSalida').value || null
+    };
+    if (id) body.id = parseInt(id);
+
+    const result = await apiFetch(id ? `${API}/${id}` : API, id ? 'PUT' : 'POST', body);
+    if (result) {
+        modalHide('modalChefOverlay');
+        mostrarAlerta(id ? 'Chef actualizado correctamente.' : 'Chef creado correctamente.', 'success');
+        cargarChefs();
+    }
+}
+
+function confirmarEliminar(id) {
+    document.getElementById('btnConfirmarEliminar').onclick = async () => {
+        const ok = await apiFetch(`${API}/${id}`, 'DELETE');
+        if (ok) {
+            modalHide('modalEliminarOverlay');
+            mostrarAlerta('Chef eliminado correctamente.', 'success');
+            cargarChefs();
+        }
+    };
+    modalShow('modalEliminarOverlay');
+}
+
+cargarChefs();
+</script>
+</body>
+</html>

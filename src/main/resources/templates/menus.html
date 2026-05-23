@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menús — MenuJPA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+
+<div class="topbar">
+    <div class="topbar-logo">
+        <div class="topbar-logo-mark">MJ</div>
+        MenuJPA
+    </div>
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menú">
+        <i class="bi bi-list"></i>
+    </button>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<nav class="nav-sidebar">
+    <a href="/" class="nav-logo">
+        <div class="nav-logo-mark">MJ</div>
+        <div class="nav-logo-text">MenuJPA <span>Gestión gastronómica</span></div>
+    </a>
+    <div class="nav-section">
+        <span class="nav-section-label">Gestión</span>
+        <a href="/menus"     class="nav-link active"><i class="bi bi-list-ul"></i><span>Menús</span></a>
+        <a href="/recetas"   class="nav-link"><i class="bi bi-card-list"></i><span>Recetas</span></a>
+        <a href="/alimentos" class="nav-link"><i class="bi bi-basket"></i><span>Alimentos</span></a>
+    </div>
+    <div class="nav-section">
+        <span class="nav-section-label">Personal</span>
+        <a href="/chefs"    class="nav-link"><i class="bi bi-person-badge"></i><span>Chefs</span></a>
+        <a href="/gerentes" class="nav-link"><i class="bi bi-person-workspace"></i><span>Gerentes</span></a>
+    </div>
+</nav>
+
+<main class="page-content">
+    <header class="page-header">
+        <div>
+            <h1 class="page-title">Menús</h1>
+            <p class="page-subtitle">Asigná gerentes y gestioná las recetas de cada menú</p>
+        </div>
+        <button class="btn btn-primary" onclick="abrirModalNuevo()">
+            <i class="bi bi-plus"></i> Nuevo Menú
+        </button>
+    </header>
+
+    <div class="split-layout">
+        <!-- Panel izquierdo: lista -->
+        <div class="panel">
+            <div class="panel-header">
+                <span class="panel-title">Menús</span>
+            </div>
+            <ul class="menu-list" id="listaMenus">
+                <li style="padding: var(--space-4) var(--space-5);">
+                    <div class="empty-state" style="padding: var(--space-8) 0;">
+                        <div class="spinner"></div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Panel derecho: detalle -->
+        <div class="panel" id="panelVacio">
+            <div class="empty-state">
+                <i class="bi bi-arrow-left-circle"></i>
+                <p>Seleccioná un menú para ver su detalle y recetas</p>
+            </div>
+        </div>
+
+        <div class="panel" id="panelDetalle" style="display:none">
+            <div class="detail-header">
+                <div>
+                    <div class="detail-title" id="detalleNombre">—</div>
+                    <div class="detail-sub" id="detalleGerente"></div>
+                </div>
+                <div class="detail-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="editarMenuActual()">
+                        <i class="bi bi-pencil"></i> Editar
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="confirmarEliminarMenu()">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </div>
+            </div>
+            <div class="detail-body">
+                <div class="detail-section-label">
+                    <span>Recetas asignadas</span>
+                    <button class="btn btn-ghost btn-sm" onclick="abrirModalAgregarReceta()">
+                        <i class="bi bi-plus"></i> Agregar
+                    </button>
+                </div>
+                <ul class="receta-list" id="listaRecetasMenu"></ul>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Nuevo/Editar Menú -->
+<div class="modal-overlay" id="modalMenuOverlay">
+    <div class="modal modal-md">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalMenuTitulo">Menú</h3>
+            <button class="modal-close" onclick="modalHide('modalMenuOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="menuId">
+            <div class="form-group">
+                <label class="form-label">Nombre del Menú <span class="required">*</span></label>
+                <input type="text" class="form-input" id="menuNombre" placeholder="Ej: Menú del Día, Menú Especial…" maxlength="100">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Gerente Responsable</label>
+                <select class="form-input" id="menuGerente">
+                    <option value="">Sin asignar</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalMenuOverlay')">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarMenu()">
+                <i class="bi bi-check-lg"></i> Guardar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Agregar Receta -->
+<div class="modal-overlay" id="modalAgregarRecetaOverlay">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <h3 class="modal-title">Agregar Receta al Menú</h3>
+            <button class="modal-close" onclick="modalHide('modalAgregarRecetaOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body" style="padding: 0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nombre</th>
+                            <th>Chef</th>
+                            <th>Dificultad</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyRecetasDisponibles">
+                        <tr><td colspan="5" style="padding:0"><div class="empty-state"><div class="spinner"></div></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalAgregarRecetaOverlay')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Eliminar -->
+<div class="modal-overlay" id="modalEliminarOverlay">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <h3 class="modal-title">Confirmar eliminación</h3>
+            <button class="modal-close" onclick="modalHide('modalEliminarOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body" id="textoConfirmarEliminar">
+            <p class="confirm-text">¿Confirmar eliminación?</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalEliminarOverlay')">Cancelar</button>
+            <button class="btn btn-danger" id="btnConfirmarEliminar">
+                <i class="bi bi-trash"></i> Eliminar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/api.js}"></script>
+<script>
+const API_MENUS    = '/api/v1/menus';
+const API_RECETAS  = '/api/v1/recetas';
+const API_GERENTES = '/api/v1/gerentes';
+
+let menuActual    = null;
+let todosGerentes = [];
+
+async function cargarMenus() {
+    const lista = document.getElementById('listaMenus');
+    lista.innerHTML = `<li style="padding: var(--space-4)"><div class="empty-state" style="padding: var(--space-8) 0"><div class="spinner"></div></div></li>`;
+
+    const data = await apiFetch(API_MENUS);
+    if (data === null) {
+        lista.innerHTML = `<li><div class="empty-state estado-error" style="padding: var(--space-8) var(--space-4)">
+            <i class="bi bi-exclamation-circle"></i>
+            <p>No se pudieron cargar los menús.</p>
+            <button class="btn btn-ghost btn-sm" onclick="cargarMenus()"><i class="bi bi-arrow-clockwise"></i> Reintentar</button>
+        </div></li>`;
+        return;
+    }
+    if (!data || data.length === 0) {
+        lista.innerHTML = `<li><div class="empty-state" style="padding: var(--space-8) var(--space-4)"><i class="bi bi-list-ul"></i><p>No hay menús registrados</p></div></li>`;
+        return;
+    }
+    lista.innerHTML = data.map(m => {
+        const n = m.recetas ? m.recetas.length : 0;
+        return `<li class="menu-item" id="btnMenu_${m.id}" onclick="seleccionarMenu(${m.id})">
+            <div>
+                <div class="menu-item-name">${m.nombre}</div>
+                <div class="menu-item-sub">${m.gerente ? m.gerente.apellido + ', ' + m.gerente.nombre : 'Sin gerente'}</div>
+            </div>
+            <span class="badge badge-accent">${n}</span>
+        </li>`;
+    }).join('');
+}
+
+async function cargarGerentes() {
+    todosGerentes = await apiFetch(API_GERENTES) || [];
+    const sel = document.getElementById('menuGerente');
+    sel.innerHTML = '<option value="">Sin asignar</option>';
+    todosGerentes.forEach(g => {
+        sel.innerHTML += `<option value="${g.id}">${g.apellido}, ${g.nombre}</option>`;
+    });
+}
+
+async function seleccionarMenu(id) {
+    document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('is-selected'));
+    const btn = document.getElementById('btnMenu_' + id);
+    if (btn) btn.classList.add('is-selected');
+
+    menuActual = await apiFetch(`${API_MENUS}/${id}`);
+    if (!menuActual) return;
+
+    document.getElementById('panelVacio').style.display   = 'none';
+    document.getElementById('panelDetalle').style.display = '';
+    document.getElementById('detalleNombre').textContent  = menuActual.nombre;
+    document.getElementById('detalleGerente').textContent = menuActual.gerente
+        ? menuActual.gerente.apellido + ', ' + menuActual.gerente.nombre
+        : 'Sin gerente asignado';
+
+    renderRecetasMenu(menuActual.recetas || []);
+}
+
+function renderRecetasMenu(recetas) {
+    const lista = document.getElementById('listaRecetasMenu');
+    if (!recetas || recetas.length === 0) {
+        lista.innerHTML = '<li style="padding: var(--space-6) 0; color: var(--text-muted); font-size: var(--text-sm); text-align: center">Sin recetas asignadas</li>';
+        return;
+    }
+    lista.innerHTML = recetas.map(r => `
+        <li class="receta-item">
+            <div>
+                <div class="receta-item-name">${r.nombreReceta}</div>
+                ${r.nombreChefTexto ? `<div class="receta-item-chef">${r.nombreChefTexto}</div>` : ''}
+            </div>
+            <div class="receta-item-right">
+                ${dificultadBadge(r.dificultad)}
+                <button class="btn btn-danger btn-sm" onclick="quitarReceta(${r.id})" title="Quitar del menú">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        </li>
+    `).join('');
+}
+
+function abrirModalNuevo() {
+    document.getElementById('menuId').value     = '';
+    document.getElementById('menuNombre').value  = '';
+    document.getElementById('menuGerente').value = '';
+    document.getElementById('modalMenuTitulo').textContent = 'Nuevo Menú';
+    modalShow('modalMenuOverlay');
+}
+
+function editarMenuActual() {
+    if (!menuActual) return;
+    document.getElementById('menuId').value      = menuActual.id;
+    document.getElementById('menuNombre').value  = menuActual.nombre;
+    document.getElementById('menuGerente').value = menuActual.gerente ? menuActual.gerente.id : '';
+    document.getElementById('modalMenuTitulo').textContent = 'Editar Menú';
+    modalShow('modalMenuOverlay');
+}
+
+async function guardarMenu() {
+    const nombre = document.getElementById('menuNombre').value.trim();
+    if (!Validar.requerido(nombre, 'Nombre del menú')) return;
+    if (!Validar.maxLength(nombre, 'Nombre del menú', 100)) return;
+
+    const id        = document.getElementById('menuId').value;
+    const gerenteId = document.getElementById('menuGerente').value;
+    const body      = { nombre };
+    if (gerenteId) body.gerente = { id: parseInt(gerenteId) };
+    if (id) body.id = parseInt(id);
+
+    const result = await apiFetch(id ? `${API_MENUS}/${id}` : API_MENUS, id ? 'PUT' : 'POST', body);
+    if (result) {
+        modalHide('modalMenuOverlay');
+        mostrarAlerta(id ? 'Menú actualizado.' : 'Menú creado.', 'success');
+        await cargarMenus();
+        if (id) seleccionarMenu(parseInt(id));
+    }
+}
+
+async function abrirModalAgregarReceta() {
+    if (!menuActual) return;
+    const recetas     = await apiFetch(API_RECETAS);
+    if (recetas === null) return;
+    const idsEnMenu   = (menuActual.recetas || []).map(r => r.id);
+    const disponibles = (recetas || []).filter(r => !idsEnMenu.includes(r.id));
+    const tbody       = document.getElementById('bodyRecetasDisponibles');
+
+    if (!disponibles.length) {
+        tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state" style="padding: var(--space-8) 0;"><i class="bi bi-card-list"></i><p>No hay más recetas disponibles</p></div></td></tr>';
+    } else {
+        tbody.innerHTML = disponibles.map(r => `
+            <tr>
+                <td><span class="badge badge-default">${r.id}</span></td>
+                <td><strong>${r.nombreReceta}</strong></td>
+                <td>${r.nombreChefTexto || '—'}</td>
+                <td>${dificultadBadge(r.dificultad)}</td>
+                <td>
+                    <div class="td-actions">
+                        <button class="btn btn-primary btn-sm" onclick="agregarRecetaAlMenu(${r.id})">
+                            <i class="bi bi-plus"></i> Agregar
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+    modalShow('modalAgregarRecetaOverlay');
+}
+
+async function agregarRecetaAlMenu(recetaId) {
+    if (!menuActual) return;
+    const result = await apiFetch(`${API_MENUS}/${menuActual.id}/recetas/${recetaId}`, 'POST');
+    if (result) {
+        mostrarAlerta('Receta agregada al menú.', 'success');
+        modalHide('modalAgregarRecetaOverlay');
+        seleccionarMenu(menuActual.id);
+        cargarMenus();
+    }
+}
+
+async function quitarReceta(recetaId) {
+    if (!menuActual) return;
+    const result = await apiFetch(`${API_MENUS}/${menuActual.id}/recetas/${recetaId}`, 'DELETE');
+    if (result !== null) {
+        mostrarAlerta('Receta quitada del menú.', 'success');
+        seleccionarMenu(menuActual.id);
+        cargarMenus();
+    }
+}
+
+function confirmarEliminarMenu() {
+    if (!menuActual) return;
+    document.getElementById('textoConfirmarEliminar').innerHTML =
+        `<p class="confirm-text">¿Eliminar el menú <strong style="color: var(--text-primary)">${menuActual.nombre}</strong>? Esta acción no se puede deshacer.</p>`;
+    document.getElementById('btnConfirmarEliminar').onclick = async () => {
+        await apiFetch(`${API_MENUS}/${menuActual.id}`, 'DELETE');
+        modalHide('modalEliminarOverlay');
+        mostrarAlerta('Menú eliminado.', 'success');
+        menuActual = null;
+        document.getElementById('panelDetalle').style.display = 'none';
+        document.getElementById('panelVacio').style.display   = '';
+        cargarMenus();
+    };
+    modalShow('modalEliminarOverlay');
+}
+
+cargarGerentes();
+cargarMenus();
+</script>
+</body>
+</html>

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recetas — MenuJPA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+
+<div class="topbar">
+    <div class="topbar-logo">
+        <div class="topbar-logo-mark">MJ</div>
+        MenuJPA
+    </div>
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menú">
+        <i class="bi bi-list"></i>
+    </button>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<nav class="nav-sidebar">
+    <a href="/" class="nav-logo">
+        <div class="nav-logo-mark">MJ</div>
+        <div class="nav-logo-text">MenuJPA <span>Gestión gastronómica</span></div>
+    </a>
+    <div class="nav-section">
+        <span class="nav-section-label">Gestión</span>
+        <a href="/menus"     class="nav-link"><i class="bi bi-list-ul"></i><span>Menús</span></a>
+        <a href="/recetas"   class="nav-link active"><i class="bi bi-card-list"></i><span>Recetas</span></a>
+        <a href="/alimentos" class="nav-link"><i class="bi bi-basket"></i><span>Alimentos</span></a>
+    </div>
+    <div class="nav-section">
+        <span class="nav-section-label">Personal</span>
+        <a href="/chefs"    class="nav-link"><i class="bi bi-person-badge"></i><span>Chefs</span></a>
+        <a href="/gerentes" class="nav-link"><i class="bi bi-person-workspace"></i><span>Gerentes</span></a>
+    </div>
+</nav>
+
+<main class="page-content">
+    <header class="page-header">
+        <div>
+            <h1 class="page-title">Recetas</h1>
+            <p class="page-subtitle">Preparaciones con dificultad, tiempo y alimentos asignados</p>
+        </div>
+        <button class="btn btn-primary" onclick="abrirModal()">
+            <i class="bi bi-plus"></i> Nueva Receta
+        </button>
+    </header>
+
+    <div class="table-wrapper">
+        <div class="table-header">
+            <span class="table-title">Recetas registradas</span>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nombre</th>
+                        <th>Chef</th>
+                        <th>Dificultad</th>
+                        <th>Tiempo</th>
+                        <th>Alimentos</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="bodyRecetas">
+                    <tr><td colspan="7" style="padding:0"><div class="empty-state"><div class="spinner"></div></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Receta -->
+<div class="modal-overlay" id="modalRecetaOverlay">
+    <div class="modal modal-xl">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitulo">Receta</h3>
+            <button class="modal-close" onclick="modalHide('modalRecetaOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="recetaId">
+            <div class="form-grid">
+                <div class="form-group col-full">
+                    <label class="form-label">Nombre de la Receta <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="nombreReceta" placeholder="Ej: Pasta Carbonara" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Dificultad</label>
+                    <select class="form-input" id="dificultad">
+                        <option value="">Sin especificar</option>
+                        <option value="Fácil">Fácil</option>
+                        <option value="Media">Media</option>
+                        <option value="Difícil">Difícil</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tiempo de Preparación</label>
+                    <input type="text" class="form-input" id="tiempo" placeholder="Ej: 30 min" maxlength="50">
+                </div>
+                <div class="form-group col-full">
+                    <label class="form-label">Chef Responsable</label>
+                    <select class="form-input" id="chefSeleccionado">
+                        <option value="">Sin asignar</option>
+                    </select>
+                </div>
+                <div class="form-group col-full">
+                    <label class="form-label">Descripción / Procedimiento</label>
+                    <textarea class="form-input" id="descripcion" placeholder="Describí el proceso de preparación…"></textarea>
+                </div>
+            </div>
+
+            <div style="margin-top: var(--space-6)">
+                <div style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 500; border-bottom: 1px solid var(--border); padding-bottom: var(--space-3); margin-bottom: var(--space-4);">
+                    Alimentos de la Receta
+                </div>
+                <div class="add-row">
+                    <select class="form-input" id="alimentoAgregar">
+                        <option value="">Seleccionar alimento…</option>
+                    </select>
+                    <button class="btn btn-success btn-sm" onclick="agregarAlimentoLista()" style="white-space: nowrap">
+                        <i class="bi bi-plus"></i> Agregar
+                    </button>
+                </div>
+                <div class="inner-table-wrapper">
+                    <table class="inner-table">
+                        <thead><tr><th>#</th><th>Nombre</th><th>Tipo</th><th style="text-align:right">Quitar</th></tr></thead>
+                        <tbody id="bodyAlimentosReceta">
+                            <tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Sin alimentos agregados</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalRecetaOverlay')">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarReceta()">
+                <i class="bi bi-check-lg"></i> Guardar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ver Detalle -->
+<div class="modal-overlay" id="modalDetalleOverlay">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <h3 class="modal-title" id="detalleTitulo">Detalle</h3>
+            <button class="modal-close" onclick="modalHide('modalDetalleOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body" id="detalleContenido"></div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalDetalleOverlay')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Eliminar -->
+<div class="modal-overlay" id="modalEliminarOverlay">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <h3 class="modal-title">Confirmar eliminación</h3>
+            <button class="modal-close" onclick="modalHide('modalEliminarOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body">
+            <p class="confirm-text">¿Eliminar esta receta? La acción no se puede deshacer.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalEliminarOverlay')">Cancelar</button>
+            <button class="btn btn-danger" id="btnConfirmarEliminar">
+                <i class="bi bi-trash"></i> Eliminar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/api.js}"></script>
+<script>
+const API = '/api/v1/recetas';
+let todosAlimentos = [];
+let alimentosEnReceta = [];
+
+async function cargarRecetas() {
+    const data = await cargarConEstado(
+        () => apiFetch(API),
+        'bodyRecetas', 7,
+        'bi-card-list', 'No hay recetas registradas'
+    );
+    if (!data || data.length === 0) return;
+
+    document.getElementById('bodyRecetas').innerHTML = data.map(r => `
+        <tr>
+            <td><span class="badge badge-default">${r.id}</span></td>
+            <td><strong>${r.nombreReceta || '—'}</strong></td>
+            <td>${r.nombreChefTexto || '—'}</td>
+            <td>${dificultadBadge(r.dificultad)}</td>
+            <td>${r.tiempo ? r.tiempo : '—'}</td>
+            <td>
+                ${r.alimentosSeleccionados && r.alimentosSeleccionados.length > 0
+                    ? `<span class="badge badge-accent">${r.alimentosSeleccionados.length} ingrediente${r.alimentosSeleccionados.length !== 1 ? 's' : ''}</span>`
+                    : '<span class="badge badge-default">Sin ingredientes</span>'}
+            </td>
+            <td>
+                <div class="td-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="verDetalle(${r.id})" title="Ver detalle">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-ghost btn-sm" onclick="editarReceta(${r.id})" title="Editar">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="confirmarEliminar(${r.id})" title="Eliminar">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function cargarSelectores() {
+    const chefs = await apiFetch('/api/v1/chefs');
+    const selChef = document.getElementById('chefSeleccionado');
+    selChef.innerHTML = '<option value="">Sin asignar</option>';
+    (chefs || []).forEach(c => {
+        selChef.innerHTML += `<option value="${c.apellido}, ${c.nombre}">${c.apellido}, ${c.nombre}</option>`;
+    });
+
+    todosAlimentos = await apiFetch('/api/v1/alimentos') || [];
+    const selAl = document.getElementById('alimentoAgregar');
+    selAl.innerHTML = '<option value="">Seleccionar alimento…</option>';
+    todosAlimentos.forEach(a => {
+        selAl.innerHTML += `<option value="${a.id}">${a.nombre}</option>`;
+    });
+}
+
+function getClaseTipo(a) {
+    return a['@class'] ? a['@class'].split('.').pop() : (a.tipo || 'Alimento');
+}
+
+function agregarAlimentoLista() {
+    const sel = document.getElementById('alimentoAgregar');
+    const id  = parseInt(sel.value);
+    if (!id) { mostrarAlerta('Seleccioná un alimento para agregar.', 'warning'); return; }
+    if (alimentosEnReceta.find(a => a.id === id)) {
+        mostrarAlerta('Este alimento ya está en la receta.', 'warning');
+        return;
+    }
+    const alimento = todosAlimentos.find(a => a.id === id);
+    if (!alimento) return;
+    alimentosEnReceta.push({ id: alimento.id, nombre: alimento.nombre, tipo: getClaseTipo(alimento) });
+    renderAlimentosReceta();
+    sel.value = '';
+}
+
+function quitarAlimentoLista(id) {
+    alimentosEnReceta = alimentosEnReceta.filter(a => a.id !== id);
+    renderAlimentosReceta();
+}
+
+function renderAlimentosReceta() {
+    const tbody = document.getElementById('bodyAlimentosReceta');
+    if (alimentosEnReceta.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Sin alimentos agregados</td></tr>';
+        return;
+    }
+    tbody.innerHTML = alimentosEnReceta.map(a => `
+        <tr>
+            <td>${a.id}</td>
+            <td>${a.nombre}</td>
+            <td>${tipoBadge(a.tipo)}</td>
+            <td style="text-align:right">
+                <button class="btn btn-danger btn-sm" onclick="quitarAlimentoLista(${a.id})">
+                    <i class="bi bi-x"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function abrirModal() {
+    alimentosEnReceta = [];
+    ['recetaId','nombreReceta','descripcion','tiempo'].forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('dificultad').value = '';
+    document.getElementById('chefSeleccionado').value = '';
+    renderAlimentosReceta();
+    document.getElementById('modalTitulo').textContent = 'Nueva Receta';
+    modalShow('modalRecetaOverlay');
+}
+
+async function editarReceta(id) {
+    const r = await apiFetch(`${API}/${id}`);
+    if (!r) return;
+    alimentosEnReceta = (r.alimentosSeleccionados || []).map(a => ({
+        id: a.id, nombre: a.nombre, tipo: getClaseTipo(a)
+    }));
+    document.getElementById('recetaId').value         = r.id;
+    document.getElementById('nombreReceta').value     = r.nombreReceta || '';
+    document.getElementById('descripcion').value      = r.descripcion || '';
+    document.getElementById('tiempo').value           = r.tiempo || '';
+    document.getElementById('dificultad').value       = r.dificultad || '';
+    document.getElementById('chefSeleccionado').value = r.nombreChefTexto || '';
+    renderAlimentosReceta();
+    document.getElementById('modalTitulo').textContent = 'Editar Receta';
+    modalShow('modalRecetaOverlay');
+}
+
+async function guardarReceta() {
+    const nombreReceta = document.getElementById('nombreReceta').value.trim();
+    if (!Validar.requerido(nombreReceta, 'Nombre de la receta')) return;
+    if (!Validar.maxLength(nombreReceta, 'Nombre de la receta', 100)) return;
+
+    const id   = document.getElementById('recetaId').value;
+    const body = {
+        nombreReceta,
+        descripcion:            document.getElementById('descripcion').value.trim() || null,
+        tiempo:                 document.getElementById('tiempo').value.trim() || null,
+        dificultad:             document.getElementById('dificultad').value || null,
+        nombreChefTexto:        document.getElementById('chefSeleccionado').value || null,
+        alimentosSeleccionados: alimentosEnReceta.map(a => ({ id: a.id }))
+    };
+    if (id) body.id = parseInt(id);
+
+    const result = await apiFetch(id ? `${API}/${id}` : API, id ? 'PUT' : 'POST', body);
+    if (result) {
+        modalHide('modalRecetaOverlay');
+        mostrarAlerta(id ? 'Receta actualizada.' : 'Receta creada.', 'success');
+        cargarRecetas();
+    }
+}
+
+async function verDetalle(id) {
+    const r = await apiFetch(`${API}/${id}`);
+    if (!r) return;
+    const alimentos = (r.alimentosSeleccionados || []).map(a =>
+        `<tr><td>${a.nombre}</td><td>${tipoBadge(getClaseTipo(a))}</td></tr>`
+    ).join('') || `<tr><td colspan="2" style="color: var(--text-muted)">Sin alimentos</td></tr>`;
+
+    document.getElementById('detalleTitulo').textContent = r.nombreReceta;
+    document.getElementById('detalleContenido').innerHTML = `
+        <div class="recipe-meta">
+            ${dificultadBadge(r.dificultad)}
+            ${r.tiempo ? `<span class="badge badge-default"><i class="bi bi-clock"></i>&nbsp;${r.tiempo}</span>` : ''}
+            ${r.nombreChefTexto ? `<span class="badge badge-default"><i class="bi bi-person"></i>&nbsp;${r.nombreChefTexto}</span>` : ''}
+        </div>
+        ${r.descripcion ? `<p class="recipe-desc">${r.descripcion}</p>` : ''}
+        <div style="font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 500; margin-bottom: var(--space-3);">Ingredientes</div>
+        <div class="inner-table-wrapper">
+            <table class="inner-table">
+                <thead><tr><th>Alimento</th><th>Tipo</th></tr></thead>
+                <tbody>${alimentos}</tbody>
+            </table>
+        </div>
+    `;
+    modalShow('modalDetalleOverlay');
+}
+
+function confirmarEliminar(id) {
+    document.getElementById('btnConfirmarEliminar').onclick = async () => {
+        const ok = await apiFetch(`${API}/${id}`, 'DELETE');
+        modalHide('modalEliminarOverlay');
+        if (ok) {
+            mostrarAlerta('Receta eliminada correctamente.', 'success');
+            cargarRecetas();
+        }
+    };
+    modalShow('modalEliminarOverlay');
+}
+
+cargarSelectores();
+cargarRecetas();
+</script>
+</body>
+</html>
