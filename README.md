@@ -26,13 +26,10 @@ Sistema web para la gestión gastronómica de un restaurante. Permite administra
 
 ### Personal
 - **Chefs** — Personal de cocina con especialidad, experiencia y horarios
-- **Meseros** — Personal de salón con horarios y salario
 - **Gerentes** — Responsables de menús y despensa
 
 ### Operaciones
 - **Clientes** — Registro de clientes con usuario y contraseña
-- **Pedidos** — Pedidos con clientes, meseros y alimentos adquiridos
-- **Despensa** — Gestión de ingredientes del restaurante
 - **Ingredientes** — Stock de ingredientes con descripción y cantidad
 
 ---
@@ -54,7 +51,6 @@ Base
 └── Persona
     ├── Empleado (abstracto)
     │   ├── Chef
-    │   └── Mesero
     ├── Gerente
     └── Cliente
 
@@ -66,8 +62,6 @@ Base
 │   └── Adicional
 ├── Menu
 ├── Receta
-├── Pedido
-├── Despensa
 └── Ingrediente
 ```
 
@@ -120,23 +114,21 @@ La aplicación queda disponible en `http://localhost:8080`.
 | Recetas | `/api/v1/recetas` |
 | Alimentos | `/api/v1/alimentos` |
 | Chefs | `/api/v1/chefs` |
-| Meseros | `/api/v1/meseros` |
 | Gerentes | `/api/v1/gerentes` |
 | Clientes | `/api/v1/clientes` |
-| Pedidos | `/api/v1/pedidos` |
-| Despensa | `/api/v1/despensas` |
 | Ingredientes | `/api/v1/ingredientes` |
 
 Todos los endpoints soportan: `GET /`, `GET /{id}`, `POST /`, `PUT /{id}`, `DELETE /{id}`.
 
-**Endpoints adicionales:**
 
-```
-POST   /api/v1/menus/{menuId}/recetas/{recetaId}      → agregar receta a menú
-DELETE /api/v1/menus/{menuId}/recetas/{recetaId}      → quitar receta de menú
-POST   /api/v1/despensas/{despensaId}/ingredientes/{ingredienteId}   → agregar ingrediente
-DELETE /api/v1/despensas/{despensaId}/ingredientes/{ingredienteId}   → quitar ingrediente
-```
+## Endpoints adicionales
+
+
+POST   /api/v1/menus/{menuId}/recetas/{recetaId}   → agregar receta al menú
+
+DELETE /api/v1/menus/{menuId}/recetas/{recetaId}   → quitar receta del menú
+
+
 
 ---
 
@@ -185,4 +177,11 @@ El sistema aplica validaciones en dos capas:
 
 - Las tablas se crean/actualizan automáticamente con `spring.jpa.hibernate.ddl-auto=update`.
 - La herencia de `Alimento` usa `SINGLE_TABLE` con discriminador `tipo_alimento`.
-- `Empleado` es una clase abstracta (`@MappedSuperclass`) que centraliza los campos comunes de `Chef` y `Mesero`.
+- `Empleado` es una clase abstracta (`@MappedSuperclass`) que centraliza los campos comunes de `Chef`.
+
+---
+
+## Autor
+
+    Martin Emanuel Zamora
+    Instituto Tecnologico Universitario (ITU) — 2026
