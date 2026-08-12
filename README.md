@@ -10,6 +10,7 @@
   <img src="https://img.shields.io/badge/JUnit5-25A162?style=flat&logo=junit5&logoColor=white" />
   <img src="https://img.shields.io/badge/Mockito-C5D9C8?style=flat" />
   <img src="https://img.shields.io/badge/OpenAPI-Swagger-85EA2D?style=flat&logo=swagger&logoColor=black" />
+  <img src="https://img.shields.io/badge/Spring%20Security-JWT-6DB33F?style=flat&logo=springsecurity&logoColor=white" />
 </p>
 
 Sistema web para la gestión gastronómica de un restaurante. Permite administrar menús, recetas, alimentos, chefs, meseros, gerentes, clientes, pedidos y despensa a través de una interfaz web.
@@ -24,6 +25,7 @@ Sistema web para la gestión gastronómica de un restaurante. Permite administra
 |---|---|
 | Backend | Java 17 · Spring Boot 3.2.5 · Spring Data JPA · Hibernate |
 | Base de datos | MySQL 8 |
+| Auth | Spring Security · JWT (jjwt) · BCrypt |
 | Documentación API | springdoc-openapi (Swagger UI) |
 | Frontend | Thymeleaf · Vanilla CSS · Vanilla JS |
 | Testing | JUnit 5 · Mockito |
@@ -110,6 +112,14 @@ spring.datasource.username=tu_usuario
 spring.datasource.password=tu_contraseña
 ```
 
+**3. Configurar el secreto JWT:** copiar `.env.example` a `.env` (o exportar las variables directamente) y completar `JWT_SECRET` con una cadena aleatoria de al menos 32 caracteres. La app **no arranca** sin esta variable — no hay valor por defecto a propósito.
+
+```bash
+cp .env.example .env
+# editar .env y completar JWT_SECRET
+export $(grep -v '^#' .env | xargs)   # o configurar las variables en tu IDE
+```
+
 ---
 
 ## Ejecución
@@ -144,6 +154,29 @@ La documentación interactiva de la API (Swagger UI) queda disponible en `http:/
 | Pedidos | `/api/v1/pedidos` |
 
 Todos los endpoints soportan: `GET /`, `GET /{id}`, `POST /`, `PUT /{id}`, `DELETE /{id}`.
+
+---
+
+## Autenticación
+
+JWT stateless. Pueden loguearse los 4 roles con `usuario`/`contrasenia` (heredados de `Persona`): `Cliente`, `Chef`, `Mesero` y `Gerente`. No hay una tabla `Usuario` genérica — el login busca las credenciales en las 4 tablas de dominio.
+
+| Endpoint | Descripción |
+|---|---|
+| `POST /api/v1/auth/registrarse` | Alta pública de un `Cliente` nuevo. Devuelve el JWT. |
+| `POST /api/v1/auth/login` | Login de cualquiera de los 4 roles. Devuelve `{ "token": "...", "rol": "..." }`. |
+
+Los tokens van en el header `Authorization: Bearer <token>`.
+
+**Reglas de autorización:**
+
+| Método | Recurso | Quién puede |
+|---|---|---|
+| `GET` | cualquiera | público |
+| `POST` / `PUT` / `DELETE` | `/chefs`, `/meseros`, `/gerentes`, `/despensas`, `/ingredientes` | solo `GERENTE` |
+| `POST` / `PUT` / `DELETE` | el resto (`/menus`, `/recetas`, `/alimentos`, `/clientes`, `/pedidos`) | cualquier rol autenticado |
+
+> No hay alta pública de `Gerente`/`Chef`/`Mesero` — el primer gerente hay que sembrarlo a mano en la base (problema clásico de bootstrap de un rol admin). Los siguientes gerentes pueden crear personal vía `POST /api/v1/gerentes` una vez logueados.
 
 
 ## Endpoints adicionales
