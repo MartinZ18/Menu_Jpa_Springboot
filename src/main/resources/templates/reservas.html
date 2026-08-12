@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservas — MenuJPA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+
+<div class="topbar">
+    <div class="topbar-logo"><div class="topbar-logo-mark">MJ</div>MenuJPA</div>
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menú"><i class="bi bi-list"></i></button>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<nav class="nav-sidebar">
+    <a href="/" class="nav-logo">
+        <div class="nav-logo-mark">MJ</div>
+        <div class="nav-logo-text">MenuJPA <span>Gestión gastronómica</span></div>
+    </a>
+    <div class="nav-section">
+        <span class="nav-section-label">Gestión</span>
+        <a href="/menus"        class="nav-link"><i class="bi bi-list-ul"></i><span>Menús</span></a>
+        <a href="/recetas"      class="nav-link"><i class="bi bi-card-list"></i><span>Recetas</span></a>
+        <a href="/alimentos"    class="nav-link"><i class="bi bi-basket"></i><span>Alimentos</span></a>
+        <a href="/ingredientes" class="nav-link" data-rol="GERENTE"><i class="bi bi-egg-fried"></i><span>Ingredientes</span></a>
+        <a href="/despensas"    class="nav-link" data-rol="GERENTE"><i class="bi bi-box-seam"></i><span>Despensas</span></a>
+    </div>
+    <div class="nav-section">
+        <span class="nav-section-label">Personal</span>
+        <a href="/chefs"    class="nav-link" data-rol="GERENTE"><i class="bi bi-person-badge"></i><span>Chefs</span></a>
+        <a href="/meseros"  class="nav-link" data-rol="GERENTE"><i class="bi bi-person-vcard"></i><span>Meseros</span></a>
+        <a href="/gerentes" class="nav-link" data-rol="GERENTE"><i class="bi bi-person-workspace"></i><span>Gerentes</span></a>
+        <a href="/pagos"    class="nav-link" data-rol="GERENTE"><i class="bi bi-cash-coin"></i><span>Pagos</span></a>
+    </div>
+    <div class="nav-section">
+        <span class="nav-section-label">Operaciones</span>
+        <a href="/clientes" class="nav-link" data-rol="GERENTE"><i class="bi bi-people"></i><span>Clientes</span></a>
+        <a href="/mesas"    class="nav-link" data-rol="GERENTE,MESERO"><i class="bi bi-grid-3x3-gap"></i><span>Mesas</span></a>
+        <a href="/pedidos"  class="nav-link" data-rol="GERENTE,MESERO"><i class="bi bi-receipt"></i><span>Pedidos</span></a>
+        <a href="/reservas" class="nav-link active" data-rol="GERENTE,MESERO,CLIENTE"><i class="bi bi-calendar-check"></i><span>Reservas</span></a>
+    </div>
+    <div class="nav-cuenta" id="navCuenta"></div>
+</nav>
+
+<main class="page-content">
+    <header class="page-header">
+        <div>
+            <h1 class="page-title">Reservas</h1>
+            <p class="page-subtitle" id="pageSubtitle">Reserva de mesas</p>
+        </div>
+        <button class="btn btn-primary" data-rol="CLIENTE" onclick="abrirModalReservar()"><i class="bi bi-plus"></i> Reservar Mesa</button>
+    </header>
+
+    <div class="table-wrapper">
+        <div class="table-header"><span class="table-title">Reservas</span></div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead><tr><th>#</th><th>Cliente</th><th>Mesa</th><th>Fecha</th><th>Horario</th><th>Personas</th><th>Estado</th><th></th></tr></thead>
+                <tbody id="bodyReservas">
+                    <tr><td colspan="8" style="padding:0"><div class="empty-state"><div class="spinner"></div></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Reservar -->
+<div class="modal-overlay" id="modalReservaOverlay">
+    <div class="modal modal-md">
+        <div class="modal-header">
+            <h3 class="modal-title">Reservar Mesa</h3>
+            <button class="modal-close" onclick="modalHide('modalReservaOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Mesa <span class="required">*</span></label>
+                <select class="form-input" id="reservaMesa"><option value="">Seleccionar…</option></select>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Fecha <span class="required">*</span></label>
+                    <input type="date" class="form-input" id="reservaFecha">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Personas <span class="required">*</span></label>
+                    <input type="number" class="form-input" id="reservaPersonas" min="1" step="1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Hora de inicio <span class="required">*</span></label>
+                    <input type="time" class="form-input" id="reservaHoraInicio">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Hora de fin <span class="required">*</span></label>
+                    <input type="time" class="form-input" id="reservaHoraFin">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalReservaOverlay')">Cancelar</button>
+            <button class="btn btn-primary" onclick="reservarMesa()"><i class="bi bi-check-lg"></i> Reservar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Cancelar -->
+<div class="modal-overlay" id="modalCancelarOverlay">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <h3 class="modal-title">Cancelar reserva</h3>
+            <button class="modal-close" onclick="modalHide('modalCancelarOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body"><p class="confirm-text">¿Cancelar esta reserva?</p></div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalCancelarOverlay')">Volver</button>
+            <button class="btn btn-danger" id="btnConfirmarCancelar"><i class="bi bi-x-circle"></i> Cancelar reserva</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/api.js}"></script>
+<script>
+const API = '/api/v1/reservas';
+
+document.getElementById('pageSubtitle').textContent = Auth.tieneRol('CLIENTE')
+    ? 'Tus reservas de mesa'
+    : 'Reservas de todos los clientes';
+
+async function cargarReservas() {
+    const data = await cargarConEstado(() => apiFetch(API), 'bodyReservas', 8, 'bi-calendar-check', 'No hay reservas');
+    if (!data || data.length === 0) return;
+
+    document.getElementById('bodyReservas').innerHTML = data.map(r => {
+        const activa = r.estado === 'ACTIVA';
+        const estadoBadge = activa
+            ? '<span class="badge badge-activa">Activa</span>'
+            : '<span class="badge badge-cancelada">Cancelada</span>';
+        const accion = activa
+            ? `<button class="btn btn-danger btn-sm" onclick="confirmarCancelar(${r.id})" title="Cancelar"><i class="bi bi-x-circle"></i></button>`
+            : '';
+        return `<tr>
+            <td><span class="badge badge-default">${r.id}</span></td>
+            <td>${escapeHtml(r.cliente.apellido + ', ' + r.cliente.nombre)}</td>
+            <td>Mesa ${r.mesa.numero}</td>
+            <td>${formatFecha(r.fecha)}</td>
+            <td>${r.horaInicio} – ${r.horaFin}</td>
+            <td>${r.cantidadPersonas}</td>
+            <td>${estadoBadge}</td>
+            <td><div class="td-actions">${accion}</div></td>
+        </tr>`;
+    }).join('');
+}
+
+async function abrirModalReservar() {
+    const mesas = await apiFetch('/api/v1/mesas') || [];
+    const sel = document.getElementById('reservaMesa');
+    sel.innerHTML = '<option value="">Seleccionar…</option>' +
+        mesas.map(m => `<option value="${m.id}">Mesa ${m.numero} (${m.capacidad} personas)</option>`).join('');
+    document.getElementById('reservaFecha').value = '';
+    document.getElementById('reservaPersonas').value = '';
+    document.getElementById('reservaHoraInicio').value = '';
+    document.getElementById('reservaHoraFin').value = '';
+    modalShow('modalReservaOverlay');
+}
+
+async function reservarMesa() {
+    const mesaId    = document.getElementById('reservaMesa').value;
+    const fecha     = document.getElementById('reservaFecha').value;
+    const personas  = document.getElementById('reservaPersonas').value;
+    const horaInicio = document.getElementById('reservaHoraInicio').value;
+    const horaFin    = document.getElementById('reservaHoraFin').value;
+
+    if (!Validar.requerido(mesaId, 'Mesa')) return;
+    if (!Validar.requerido(fecha, 'Fecha')) return;
+    if (!Validar.requerido(personas, 'Cantidad de personas')) return;
+    if (!Validar.requerido(horaInicio, 'Hora de inicio')) return;
+    if (!Validar.requerido(horaFin, 'Hora de fin')) return;
+
+    const body = {
+        mesaId: parseInt(mesaId), fecha,
+        horaInicio, horaFin,
+        cantidadPersonas: parseInt(personas)
+    };
+    const result = await apiFetch(`${API}/reservar`, 'POST', body);
+    if (result) {
+        modalHide('modalReservaOverlay');
+        mostrarAlerta('Mesa reservada.', 'success');
+        cargarReservas();
+    }
+}
+
+function confirmarCancelar(id) {
+    document.getElementById('btnConfirmarCancelar').onclick = async () => {
+        const ok = await apiFetch(`${API}/${id}/cancelar`, 'POST');
+        if (ok !== null) {
+            modalHide('modalCancelarOverlay');
+            mostrarAlerta('Reserva cancelada.', 'success');
+            cargarReservas();
+        }
+    };
+    modalShow('modalCancelarOverlay');
+}
+
+cargarReservas();
+</script>
+</body>
+</html>
