@@ -2,6 +2,7 @@ package com.menujpa.services;
 
 import com.menujpa.entities.Alimento;
 import com.menujpa.repositories.BaseRepository;
+import com.menujpa.repositories.PedidoRepository;
 import com.menujpa.repositories.RecetaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,12 +27,16 @@ class AlimentoServiceImplTest {
     @Mock
     private RecetaRepository recetaRepository;
 
+    @Mock
+    private PedidoRepository pedidoRepository;
+
     private AlimentoServiceImpl alimentoService;
 
     @BeforeEach
     void setUp() {
         alimentoService = new AlimentoServiceImpl(baseRepository);
         ReflectionTestUtils.setField(alimentoService, "recetaRepository", recetaRepository);
+        ReflectionTestUtils.setField(alimentoService, "pedidoRepository", pedidoRepository);
     }
 
     @Test
@@ -82,8 +87,21 @@ class AlimentoServiceImplTest {
     }
 
     @Test
+    void delete_conPedidosAsociados_lanzaExcepcionYNoBorra() {
+        when(recetaRepository.existsByAlimentosSeleccionadosId(8L)).thenReturn(false);
+        when(pedidoRepository.existsByAlimentosAdquiridosId(8L)).thenReturn(true);
+
+        assertThatThrownBy(() -> alimentoService.delete(8L))
+            .isInstanceOf(Exception.class)
+            .hasMessageContaining("tiene pedidos asociados");
+
+        verify(baseRepository, never()).deleteById(any());
+    }
+
+    @Test
     void delete_sinUsoYExistente_loBorra() throws Exception {
         when(recetaRepository.existsByAlimentosSeleccionadosId(6L)).thenReturn(false);
+        when(pedidoRepository.existsByAlimentosAdquiridosId(6L)).thenReturn(false);
         when(baseRepository.existsById(6L)).thenReturn(true);
 
         boolean resultado = alimentoService.delete(6L);
@@ -95,6 +113,7 @@ class AlimentoServiceImplTest {
     @Test
     void delete_sinUsoPeroInexistente_lanzaExcepcion() {
         when(recetaRepository.existsByAlimentosSeleccionadosId(7L)).thenReturn(false);
+        when(pedidoRepository.existsByAlimentosAdquiridosId(7L)).thenReturn(false);
         when(baseRepository.existsById(7L)).thenReturn(false);
 
         assertThatThrownBy(() -> alimentoService.delete(7L))

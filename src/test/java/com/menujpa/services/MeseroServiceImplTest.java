@@ -2,11 +2,13 @@ package com.menujpa.services;
 
 import com.menujpa.entities.Mesero;
 import com.menujpa.repositories.BaseRepository;
+import com.menujpa.repositories.PedidoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,11 +23,15 @@ class MeseroServiceImplTest {
     @Mock
     private BaseRepository<Mesero, Long> baseRepository;
 
+    @Mock
+    private PedidoRepository pedidoRepository;
+
     private MeseroServiceImpl meseroService;
 
     @BeforeEach
     void setUp() {
         meseroService = new MeseroServiceImpl(baseRepository);
+        ReflectionTestUtils.setField(meseroService, "pedidoRepository", pedidoRepository);
     }
 
     @Test
@@ -66,19 +72,32 @@ class MeseroServiceImplTest {
     }
 
     @Test
-    void delete_conIdExistente_loBorra() throws Exception {
-        when(baseRepository.existsById(5L)).thenReturn(true);
+    void delete_conPedidosAsociados_lanzaExcepcionYNoBorra() {
+        when(pedidoRepository.existsByMeserosId(5L)).thenReturn(true);
 
-        assertThat(meseroService.delete(5L)).isTrue();
-        verify(baseRepository).deleteById(5L);
+        assertThatThrownBy(() -> meseroService.delete(5L))
+            .isInstanceOf(Exception.class)
+            .hasMessageContaining("tiene pedidos asociados");
+
+        verify(baseRepository, never()).deleteById(any());
     }
 
     @Test
-    void delete_conIdInexistente_lanzaExcepcion() {
-        when(baseRepository.existsById(6L)).thenReturn(false);
+    void delete_sinPedidosYExistente_loBorra() throws Exception {
+        when(pedidoRepository.existsByMeserosId(6L)).thenReturn(false);
+        when(baseRepository.existsById(6L)).thenReturn(true);
 
-        assertThatThrownBy(() -> meseroService.delete(6L))
+        assertThat(meseroService.delete(6L)).isTrue();
+        verify(baseRepository).deleteById(6L);
+    }
+
+    @Test
+    void delete_sinPedidosPeroInexistente_lanzaExcepcion() {
+        when(pedidoRepository.existsByMeserosId(7L)).thenReturn(false);
+        when(baseRepository.existsById(7L)).thenReturn(false);
+
+        assertThatThrownBy(() -> meseroService.delete(7L))
             .isInstanceOf(Exception.class)
-            .hasMessageContaining("6");
+            .hasMessageContaining("7");
     }
 }
