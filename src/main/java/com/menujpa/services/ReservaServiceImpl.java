@@ -1,0 +1,84 @@
+package com.menujpa.services;
+
+import com.menujpa.entities.Cliente;
+import com.menujpa.entities.Mesa;
+import com.menujpa.entities.Reserva;
+import com.menujpa.repositories.BaseRepository;
+import com.menujpa.repositories.ClienteRepository;
+import com.menujpa.repositories.MesaRepository;
+import com.menujpa.repositories.ReservaRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalTime;
+import java.util.Date;
+import java.util.List;
+
+@Service
+public class ReservaServiceImpl extends BaseServiceImpl<Reserva, Long> implements ReservaService {
+
+    @Autowired private ClienteRepository clienteRepository;
+    @Autowired private MesaRepository mesaRepository;
+    @Autowired private ReservaRepository reservaRepository;
+
+    public ReservaServiceImpl(BaseRepository<Reserva, Long> baseRepository) { super(baseRepository); }
+
+    @Override @Transactional
+    public Reserva reservarMesa(String clienteUsuario, Long mesaId, Date fecha, String horaInicio, String horaFin,
+                                 Integer cantidadPersonas) throws Exception {
+        try {
+            Cliente cliente = clienteRepository.findByUsuario(clienteUsuario)
+                .orElseThrow(() -> new Exception("Cliente no encontrado: " + clienteUsuario));
+            Mesa mesa = mesaRepository.findById(mesaId)
+                .orElseThrow(() -> new Exception("Mesa no encontrada con id: " + mesaId));
+
+            if (cantidadPersonas > mesa.getCapacidad())
+                throw new Exception("La mesa " + mesa.getNumero() + " tiene capacidad para "
+                    + mesa.getCapacidad() + " personas.");
+
+            LocalTime inicio = LocalTime.parse(horaInicio);
+            LocalTime fin = LocalTime.parse(horaFin);
+            if (!fin.isAfter(inicio))
+                throw new Exception("La hora de fin debe ser posterior a la hora de inicio.");
+
+            List<Reserva> reservasDelDia = reservaRepository.findByMesaIdAndFechaAndEstado(mesaId, fecha, "ACTIVA");
+            for (Reserva existente : reservasDelDia) {
+                LocalTime otroInicio = LocalTime.parse(existente.getHoraInicio());
+                LocalTime otroFin = LocalTime.parse(existente.getHoraFin());
+                boolean solapa = inicio.isBefore(otroFin) && otroInicio.isBefore(fin);
+                if (solapa)
+                    throw new Exception("La mesa " + mesa.getNumero() + " ya está reservada de "
+                        + existente.getHoraInicio() + " a " + existente.getHoraFin() + " ese día.");
+            }
+
+            Reserva reserva = new Reserva();
+            reserva.setCliente(cliente);
+            reserva.setMesa(mesa);
+            reserva.setFecha(fecha);
+            reserva.setHoraInicio(horaInicio);
+            reserva.setHoraFin(horaFin);
+            reserva.setCantidadPersonas(cantidadPersonas);
+            reserva.setEstado("ACTIVA");
+
+            return baseRepository.save(reserva);
+        } catch (Exception e) { throw new Exception(e.getMessage()); }
+    }
+
+    @Override @Transactional
+    public void cancelarReservacion(Long reservaId, String usuarioSolicitante, boolean esGerente) throws Exception {
+        try {
+            Reserva reserva = baseRepository.findById(reservaId)
+                .orElseThrow(() -> new Exception("Reserva no encontrada con id: " + reservaId));
+
+            if (!esGerente && !reserva.getCliente().getUsuario().equals(usuarioSolicitante))
+                throw new Exception("No podés cancelar una reserva que no es tuya.");
+
+            if ("CANCELADA".equals(reserva.getEstado()))
+                throw new Exception("La reserva ya estaba cancelada.");
+
+            reserva.setEstado("CANCELADA");
+            baseRepository.save(reserva);
+        } catch (Exception e) { throw new Exception(e.getMessage()); }
+    }
+}

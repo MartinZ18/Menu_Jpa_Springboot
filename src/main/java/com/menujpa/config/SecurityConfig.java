@@ -40,7 +40,7 @@ public class SecurityConfig {
 
     private static final String[] GESTION_STAFF = {
         "/api/v1/chefs/**", "/api/v1/meseros/**", "/api/v1/gerentes/**",
-        "/api/v1/despensas/**", "/api/v1/ingredientes/**", "/api/v1/pagos/**"
+        "/api/v1/despensas/**", "/api/v1/ingredientes/**", "/api/v1/pagos/**", "/api/v1/mesas/**"
     };
 
     private static final String[] ACCIONES_PEDIDO = {
@@ -68,6 +68,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, GESTION_STAFF).hasRole("GERENTE")
                 .requestMatchers(HttpMethod.DELETE, GESTION_STAFF).hasRole("GERENTE")
                 .requestMatchers(ACCIONES_PEDIDO).hasAnyRole("MESERO", "GERENTE")
+                .requestMatchers(HttpMethod.POST, "/api/v1/reservas/reservar").hasRole("CLIENTE")
                 .anyRequest().authenticated())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
