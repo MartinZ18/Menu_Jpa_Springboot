@@ -95,6 +95,23 @@ class RecetaServiceImplTest {
     }
 
     @Test
+    void update_sinIdEnElBody_usaElIdDeLaUrlYNoInsertaUnaFilaNueva() throws Exception {
+        // Regresion: si el body no trae "id" (client omitiendolo), guardar la entidad tal cual
+        // la insertaria como fila nueva en vez de actualizar la existente.
+        Receta existente = new Receta();
+        existente.setId(3L);
+        Receta cambios = new Receta();
+        cambios.setNombreReceta("Receta actualizada");
+
+        when(baseRepository.findById(3L)).thenReturn(Optional.of(existente));
+        when(baseRepository.save(any(Receta.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Receta resultado = recetaService.update(3L, cambios);
+
+        assertThat(resultado.getId()).isEqualTo(3L);
+    }
+
+    @Test
     void update_conIdInexistente_lanzaExcepcion() {
         when(baseRepository.findById(404L)).thenReturn(Optional.empty());
 

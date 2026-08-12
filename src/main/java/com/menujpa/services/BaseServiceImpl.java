@@ -33,6 +33,9 @@ public abstract class BaseServiceImpl<E extends Base, ID extends Serializable> i
     public E update(ID id, E entity) throws Exception {
         try {
             baseRepository.findById(id).orElseThrow(() -> new Exception("Entidad no encontrada con id: " + id));
+            // El id de la URL manda siempre: si el body no lo trae (o trae uno distinto),
+            // guardar la entidad tal cual la crearia como fila nueva en vez de actualizar esta.
+            entity.setId((Long) id);
             return baseRepository.save(entity);
         } catch (Exception e) { throw new Exception(e.getMessage()); }
     }
