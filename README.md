@@ -7,6 +7,9 @@
   <img src="https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat&logo=mysql&logoColor=white" />
   <img src="https://img.shields.io/badge/Thymeleaf-005F0F?style=flat&logo=thymeleaf&logoColor=white" />
   <img src="https://img.shields.io/badge/Maven-C71A36?style=flat&logo=apachemaven&logoColor=white" />
+  <img src="https://img.shields.io/badge/JUnit5-25A162?style=flat&logo=junit5&logoColor=white" />
+  <img src="https://img.shields.io/badge/Mockito-C5D9C8?style=flat" />
+  <img src="https://img.shields.io/badge/OpenAPI-Swagger-85EA2D?style=flat&logo=swagger&logoColor=black" />
 </p>
 
 Sistema web para la gestión gastronómica de un restaurante. Permite administrar menús, recetas, alimentos, chefs, meseros, gerentes, clientes, pedidos y despensa a través de una interfaz web.
@@ -21,7 +24,9 @@ Sistema web para la gestión gastronómica de un restaurante. Permite administra
 |---|---|
 | Backend | Java 17 · Spring Boot 3.2.5 · Spring Data JPA · Hibernate |
 | Base de datos | MySQL 8 |
+| Documentación API | springdoc-openapi (Swagger UI) |
 | Frontend | Thymeleaf · Vanilla CSS · Vanilla JS |
+| Testing | JUnit 5 · Mockito |
 | Build | Maven |
 
 ---
@@ -113,6 +118,8 @@ spring.datasource.password=tu_contraseña
 
 La aplicación queda disponible en `http://localhost:8080`.
 
+La documentación interactiva de la API (Swagger UI) queda disponible en `http://localhost:8080/swagger-ui/index.html`.
+
 ---
 
 ## Endpoints REST
@@ -141,6 +148,20 @@ DELETE /api/v1/menus/{menuId}/recetas/{recetaId}   → quitar receta del menú
 
 ---
 
+## Tests
+
+Cobertura unitaria de la capa de `services` (`MenuServiceImpl`, `RecetaServiceImpl`) con JUnit 5 + Mockito. Los repositorios se mockean, así que la suite no depende de una base de datos real ni de que la app esté corriendo.
+
+```bash
+# Correr toda la suite
+./mvnw test
+
+# Correr una clase de test puntual
+./mvnw test -Dtest=MenuServiceImplTest
+```
+
+---
+
 ## Estructura del proyecto
 
 ```
@@ -149,6 +170,7 @@ menujpa-spring/
 │   ├── main/
 │   │   ├── java/com/menujpa/
 │   │   │   ├── MenuJpaApplication.java
+│   │   │   ├── config/        OpenApiConfig.java
 │   │   │   ├── controllers/
 │   │   │   ├── services/
 │   │   │   ├── repositories/
@@ -165,9 +187,14 @@ menujpa-spring/
 │   │           ├── alimentos.html
 │   │           ├── chefs.html
 │   │           └── gerentes.html
-│   └── test/
+│   └── test/java/com/menujpa/
+│       ├── SmokeTest.java
+│       └── services/
+│           ├── MenuServiceImplTest.java
+│           └── RecetaServiceImplTest.java
 ├── docs/
 │   └── DiagramaMenu.jpeg
+├── mvnw / mvnw.cmd
 └── pom.xml
 ```
 
