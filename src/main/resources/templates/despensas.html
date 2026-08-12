@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Despensas — MenuJPA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+
+<div class="topbar">
+    <div class="topbar-logo"><div class="topbar-logo-mark">MJ</div>MenuJPA</div>
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menú"><i class="bi bi-list"></i></button>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<nav class="nav-sidebar">
+    <a href="/" class="nav-logo">
+        <div class="nav-logo-mark">MJ</div>
+        <div class="nav-logo-text">MenuJPA <span>Gestión gastronómica</span></div>
+    </a>
+    <div class="nav-section">
+        <span class="nav-section-label">Gestión</span>
+        <a href="/menus"        class="nav-link"><i class="bi bi-list-ul"></i><span>Menús</span></a>
+        <a href="/recetas"      class="nav-link"><i class="bi bi-card-list"></i><span>Recetas</span></a>
+        <a href="/alimentos"    class="nav-link"><i class="bi bi-basket"></i><span>Alimentos</span></a>
+        <a href="/ingredientes" class="nav-link" data-rol="GERENTE"><i class="bi bi-egg-fried"></i><span>Ingredientes</span></a>
+        <a href="/despensas"    class="nav-link active" data-rol="GERENTE"><i class="bi bi-box-seam"></i><span>Despensas</span></a>
+    </div>
+    <div class="nav-section">
+        <span class="nav-section-label">Personal</span>
+        <a href="/chefs"    class="nav-link" data-rol="GERENTE"><i class="bi bi-person-badge"></i><span>Chefs</span></a>
+        <a href="/meseros"  class="nav-link" data-rol="GERENTE"><i class="bi bi-person-vcard"></i><span>Meseros</span></a>
+        <a href="/gerentes" class="nav-link" data-rol="GERENTE"><i class="bi bi-person-workspace"></i><span>Gerentes</span></a>
+        <a href="/pagos"    class="nav-link" data-rol="GERENTE"><i class="bi bi-cash-coin"></i><span>Pagos</span></a>
+    </div>
+    <div class="nav-section">
+        <span class="nav-section-label">Operaciones</span>
+        <a href="/clientes" class="nav-link" data-rol="GERENTE"><i class="bi bi-people"></i><span>Clientes</span></a>
+        <a href="/mesas"    class="nav-link" data-rol="GERENTE,MESERO"><i class="bi bi-grid-3x3-gap"></i><span>Mesas</span></a>
+        <a href="/pedidos"  class="nav-link" data-rol="GERENTE,MESERO"><i class="bi bi-receipt"></i><span>Pedidos</span></a>
+        <a href="/reservas" class="nav-link" data-rol="GERENTE,MESERO,CLIENTE"><i class="bi bi-calendar-check"></i><span>Reservas</span></a>
+    </div>
+    <div class="nav-cuenta" id="navCuenta"></div>
+</nav>
+
+<main class="page-content">
+    <header class="page-header">
+        <div>
+            <h1 class="page-title">Despensas</h1>
+            <p class="page-subtitle">Agrupan el stock de ingredientes, administradas por un gerente</p>
+        </div>
+        <button class="btn btn-primary" data-rol="GERENTE" onclick="abrirModalNueva()"><i class="bi bi-plus"></i> Nueva Despensa</button>
+    </header>
+
+    <div class="split-layout">
+        <div class="panel">
+            <div class="panel-header"><span class="panel-title">Despensas</span></div>
+            <ul class="menu-list" id="listaDespensas">
+                <li style="padding: var(--space-4);"><div class="empty-state" style="padding: var(--space-8) 0;"><div class="spinner"></div></div></li>
+            </ul>
+        </div>
+
+        <div class="panel" id="panelVacio">
+            <div class="empty-state">
+                <i class="bi bi-arrow-left-circle"></i>
+                <p>Seleccioná una despensa para ver sus ingredientes</p>
+            </div>
+        </div>
+
+        <div class="panel" id="panelDetalle" style="display:none">
+            <div class="detail-header">
+                <div>
+                    <div class="detail-title" id="detalleNombre">—</div>
+                    <div class="detail-sub" id="detalleGerente"></div>
+                </div>
+                <div class="detail-actions">
+                    <button class="btn btn-danger btn-sm" onclick="confirmarEliminarDespensa()"><i class="bi bi-trash"></i> Eliminar</button>
+                </div>
+            </div>
+            <div class="detail-body">
+                <div class="detail-section-label">
+                    <span>Ingredientes en stock</span>
+                    <button class="btn btn-ghost btn-sm" onclick="abrirModalAgregarIngrediente()"><i class="bi bi-plus"></i> Agregar</button>
+                </div>
+                <ul class="receta-list" id="listaIngredientesDespensa"></ul>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Nueva Despensa -->
+<div class="modal-overlay" id="modalDespensaOverlay">
+    <div class="modal modal-md">
+        <div class="modal-header">
+            <h3 class="modal-title">Nueva Despensa</h3>
+            <button class="modal-close" onclick="modalHide('modalDespensaOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Gerente responsable</label>
+                <select class="form-input" id="despensaGerente"><option value="">Sin asignar</option></select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalDespensaOverlay')">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarDespensa()"><i class="bi bi-check-lg"></i> Crear</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Agregar Ingrediente -->
+<div class="modal-overlay" id="modalAgregarIngredienteOverlay">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <h3 class="modal-title">Agregar Ingrediente a la Despensa</h3>
+            <button class="modal-close" onclick="modalHide('modalAgregarIngredienteOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body" style="padding:0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead><tr><th>#</th><th>Descripción</th><th>Stock</th><th></th></tr></thead>
+                    <tbody id="bodyIngredientesDisponibles">
+                        <tr><td colspan="4" style="padding:0"><div class="empty-state"><div class="spinner"></div></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalAgregarIngredienteOverlay')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Eliminar -->
+<div class="modal-overlay" id="modalEliminarOverlay">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <h3 class="modal-title">Confirmar eliminación</h3>
+            <button class="modal-close" onclick="modalHide('modalEliminarOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body"><p class="confirm-text">¿Eliminar esta despensa? La acción no se puede deshacer.</p></div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalEliminarOverlay')">Cancelar</button>
+            <button class="btn btn-danger" id="btnConfirmarEliminar"><i class="bi bi-trash"></i> Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/api.js}"></script>
+<script>
+const API_DESPENSAS    = '/api/v1/despensas';
+const API_INGREDIENTES = '/api/v1/ingredientes';
+const API_GERENTES     = '/api/v1/gerentes';
+
+let despensaActual = null;
+
+async function cargarDespensas() {
+    const lista = document.getElementById('listaDespensas');
+    const data = await apiFetch(API_DESPENSAS);
+    if (data === null) {
+        lista.innerHTML = `<li><div class="empty-state estado-error" style="padding: var(--space-8) var(--space-4)"><i class="bi bi-exclamation-circle"></i><p>No se pudieron cargar las despensas.</p></div></li>`;
+        return;
+    }
+    if (!data.length) {
+        lista.innerHTML = `<li><div class="empty-state" style="padding: var(--space-8) var(--space-4)"><i class="bi bi-box-seam"></i><p>No hay despensas registradas</p></div></li>`;
+        return;
+    }
+    lista.innerHTML = data.map(d => `
+        <li class="menu-item" id="btnDespensa_${d.id}" onclick="seleccionarDespensa(${d.id})">
+            <div>
+                <div class="menu-item-name">Despensa #${d.id}</div>
+                <div class="menu-item-sub">${d.gerente ? escapeHtml(d.gerente.apellido + ', ' + d.gerente.nombre) : 'Sin gerente'}</div>
+            </div>
+            <span class="badge badge-accent">${(d.ingredientes || []).length}</span>
+        </li>`).join('');
+}
+
+async function cargarGerentesSelect() {
+    const gerentes = await apiFetch(API_GERENTES) || [];
+    const sel = document.getElementById('despensaGerente');
+    sel.innerHTML = '<option value="">Sin asignar</option>';
+    gerentes.forEach(g => sel.innerHTML += `<option value="${g.id}">${escapeHtml(g.apellido + ', ' + g.nombre)}</option>`);
+}
+
+async function seleccionarDespensa(id) {
+    document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('is-selected'));
+    document.getElementById('btnDespensa_' + id)?.classList.add('is-selected');
+
+    despensaActual = await apiFetch(`${API_DESPENSAS}/${id}`);
+    if (!despensaActual) return;
+
+    document.getElementById('panelVacio').style.display   = 'none';
+    document.getElementById('panelDetalle').style.display = '';
+    document.getElementById('detalleNombre').textContent  = 'Despensa #' + despensaActual.id;
+    document.getElementById('detalleGerente').textContent = despensaActual.gerente
+        ? despensaActual.gerente.apellido + ', ' + despensaActual.gerente.nombre
+        : 'Sin gerente asignado';
+
+    renderIngredientesDespensa(despensaActual.ingredientes || []);
+}
+
+function renderIngredientesDespensa(ingredientes) {
+    const lista = document.getElementById('listaIngredientesDespensa');
+    if (!ingredientes.length) {
+        lista.innerHTML = '<li style="padding: var(--space-6) 0; color: var(--text-muted); font-size: var(--text-sm); text-align: center">Sin ingredientes en stock</li>';
+        return;
+    }
+    lista.innerHTML = ingredientes.map(i => `
+        <li class="receta-item">
+            <div>
+                <div class="receta-item-name">${escapeHtml(i.descripcion)}</div>
+                <div class="receta-item-chef">Stock: ${i.cantidadStock != null ? i.cantidadStock : 0}</div>
+            </div>
+            <div class="receta-item-right">
+                <button class="btn btn-danger btn-sm" onclick="quitarIngrediente(${i.id})" title="Quitar de la despensa"><i class="bi bi-x"></i></button>
+            </div>
+        </li>`).join('');
+}
+
+function abrirModalNueva() {
+    cargarGerentesSelect();
+    document.getElementById('despensaGerente').value = '';
+    modalShow('modalDespensaOverlay');
+}
+
+async function guardarDespensa() {
+    const gerenteId = document.getElementById('despensaGerente').value;
+    const body = {};
+    if (gerenteId) body.gerente = { id: parseInt(gerenteId) };
+
+    const result = await apiFetch(API_DESPENSAS, 'POST', body);
+    if (result) {
+        modalHide('modalDespensaOverlay');
+        mostrarAlerta('Despensa creada.', 'success');
+        await cargarDespensas();
+        seleccionarDespensa(result.id);
+    }
+}
+
+async function abrirModalAgregarIngrediente() {
+    if (!despensaActual) return;
+    const ingredientes = await apiFetch(API_INGREDIENTES);
+    if (ingredientes === null) return;
+    const idsEnDespensa = (despensaActual.ingredientes || []).map(i => i.id);
+    const disponibles = ingredientes.filter(i => !idsEnDespensa.includes(i.id));
+    const tbody = document.getElementById('bodyIngredientesDisponibles');
+
+    if (!disponibles.length) {
+        tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state" style="padding: var(--space-8) 0;"><i class="bi bi-egg-fried"></i><p>No hay más ingredientes disponibles</p></div></td></tr>';
+    } else {
+        tbody.innerHTML = disponibles.map(i => `
+            <tr>
+                <td><span class="badge badge-default">${i.id}</span></td>
+                <td>${escapeHtml(i.descripcion)}</td>
+                <td>${i.cantidadStock != null ? i.cantidadStock : 0}</td>
+                <td><div class="td-actions"><button class="btn btn-primary btn-sm" onclick="agregarIngredienteADespensa(${i.id})"><i class="bi bi-plus"></i> Agregar</button></div></td>
+            </tr>`).join('');
+    }
+    modalShow('modalAgregarIngredienteOverlay');
+}
+
+async function agregarIngredienteADespensa(ingredienteId) {
+    if (!despensaActual) return;
+    const result = await apiFetch(`${API_DESPENSAS}/${despensaActual.id}/ingredientes/${ingredienteId}`, 'POST');
+    if (result) {
+        mostrarAlerta('Ingrediente agregado a la despensa.', 'success');
+        modalHide('modalAgregarIngredienteOverlay');
+        seleccionarDespensa(despensaActual.id);
+        cargarDespensas();
+    }
+}
+
+async function quitarIngrediente(ingredienteId) {
+    if (!despensaActual) return;
+    const result = await apiFetch(`${API_DESPENSAS}/${despensaActual.id}/ingredientes/${ingredienteId}`, 'DELETE');
+    if (result !== null) {
+        mostrarAlerta('Ingrediente quitado de la despensa.', 'success');
+        seleccionarDespensa(despensaActual.id);
+        cargarDespensas();
+    }
+}
+
+function confirmarEliminarDespensa() {
+    if (!despensaActual) return;
+    document.getElementById('btnConfirmarEliminar').onclick = async () => {
+        const ok = await apiFetch(`${API_DESPENSAS}/${despensaActual.id}`, 'DELETE');
+        if (ok) {
+            modalHide('modalEliminarOverlay');
+            mostrarAlerta('Despensa eliminada.', 'success');
+            despensaActual = null;
+            document.getElementById('panelDetalle').style.display = 'none';
+            document.getElementById('panelVacio').style.display   = '';
+            cargarDespensas();
+        }
+    };
+    modalShow('modalEliminarOverlay');
+}
+
+cargarDespensas();
+</script>
+</body>
+</html>
