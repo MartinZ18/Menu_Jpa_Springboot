@@ -64,7 +64,7 @@ class ReservaServiceImplTest {
         Cliente cliente = new Cliente();
         cliente.setUsuario("marta");
         when(clienteRepository.findByUsuario("marta")).thenReturn(Optional.of(cliente));
-        when(mesaRepository.findById(1L)).thenReturn(Optional.of(mesaDeCapacidad(4)));
+        when(mesaRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(mesaDeCapacidad(4)));
         when(reservaRepository.findByMesaIdAndFechaAndEstado(1L, fecha, "ACTIVA")).thenReturn(List.of());
         when(baseRepository.save(any(Reserva.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -77,7 +77,7 @@ class ReservaServiceImplTest {
     @Test
     void reservarMesa_conCantidadMayorQueLaCapacidad_lanzaExcepcion() throws Exception {
         when(clienteRepository.findByUsuario("marta")).thenReturn(Optional.of(new Cliente()));
-        when(mesaRepository.findById(1L)).thenReturn(Optional.of(mesaDeCapacidad(2)));
+        when(mesaRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(mesaDeCapacidad(2)));
 
         assertThatThrownBy(() -> reservaService.reservarMesa("marta", 1L, fecha, "20:00", "21:00", 5))
             .isInstanceOf(Exception.class)
@@ -89,7 +89,7 @@ class ReservaServiceImplTest {
     @Test
     void reservarMesa_conHoraFinAnteriorOIgualAHoraInicio_lanzaExcepcion() throws Exception {
         when(clienteRepository.findByUsuario("marta")).thenReturn(Optional.of(new Cliente()));
-        when(mesaRepository.findById(1L)).thenReturn(Optional.of(mesaDeCapacidad(4)));
+        when(mesaRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(mesaDeCapacidad(4)));
 
         assertThatThrownBy(() -> reservaService.reservarMesa("marta", 1L, fecha, "21:00", "21:00", 2))
             .isInstanceOf(Exception.class)
@@ -103,7 +103,7 @@ class ReservaServiceImplTest {
         existente.setHoraFin("21:30");
 
         when(clienteRepository.findByUsuario("marta")).thenReturn(Optional.of(new Cliente()));
-        when(mesaRepository.findById(1L)).thenReturn(Optional.of(mesaDeCapacidad(4)));
+        when(mesaRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(mesaDeCapacidad(4)));
         when(reservaRepository.findByMesaIdAndFechaAndEstado(1L, fecha, "ACTIVA")).thenReturn(List.of(existente));
 
         // pide 21:00-22:00, que se solapa con la existente 20:00-21:30
@@ -121,7 +121,7 @@ class ReservaServiceImplTest {
         existente.setHoraFin("21:00");
 
         when(clienteRepository.findByUsuario("marta")).thenReturn(Optional.of(new Cliente()));
-        when(mesaRepository.findById(1L)).thenReturn(Optional.of(mesaDeCapacidad(4)));
+        when(mesaRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(mesaDeCapacidad(4)));
         when(reservaRepository.findByMesaIdAndFechaAndEstado(1L, fecha, "ACTIVA")).thenReturn(List.of(existente));
         when(baseRepository.save(any(Reserva.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -129,6 +129,18 @@ class ReservaServiceImplTest {
         Reserva reserva = reservaService.reservarMesa("marta", 1L, fecha, "21:00", "22:00", 2);
 
         assertThat(reserva.getHoraInicio()).isEqualTo("21:00");
+    }
+
+    @Test
+    void reservarMesa_conMesaInexistente_lanzaExcepcion() throws Exception {
+        when(clienteRepository.findByUsuario("marta")).thenReturn(Optional.of(new Cliente()));
+        when(mesaRepository.findByIdForUpdate(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> reservaService.reservarMesa("marta", 1L, fecha, "20:00", "21:00", 2))
+            .isInstanceOf(Exception.class)
+            .hasMessageContaining("Mesa no encontrada con id: 1");
+
+        verifyNoInteractions(reservaRepository);
     }
 
     @Test

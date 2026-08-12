@@ -30,7 +30,14 @@ public class ReservaServiceImpl extends BaseServiceImpl<Reserva, Long> implement
         try {
             Cliente cliente = clienteRepository.findByUsuario(clienteUsuario)
                 .orElseThrow(() -> new Exception("Cliente no encontrado: " + clienteUsuario));
-            Mesa mesa = mesaRepository.findById(mesaId)
+
+            // Lock pesimista (SELECT ... FOR UPDATE) sobre la mesa: sin esto, dos reservas
+            // concurrentes para el mismo horario podrian pasar el chequeo de solapamiento las
+            // dos antes de que ninguna haga commit (TOCTOU) y terminar con una doble reserva.
+            // Al bloquear la fila de la mesa, la segunda transaccion espera a que la primera
+            // termine y recien ahi hace su propio chequeo, ya viendo la reserva nueva. Otras
+            // mesas no se ven afectadas -- el lock es por fila, no global.
+            Mesa mesa = mesaRepository.findByIdForUpdate(mesaId)
                 .orElseThrow(() -> new Exception("Mesa no encontrada con id: " + mesaId));
 
             if (cantidadPersonas > mesa.getCapacidad())
