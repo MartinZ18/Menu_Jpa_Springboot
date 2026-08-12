@@ -11,8 +11,7 @@ import java.util.List;
 @NoArgsConstructor @AllArgsConstructor
 public class Despensa extends Base {
 
-    // Composición con Ingrediente: diamante lleno en el diagrama
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "despensa_ingrediente",
         joinColumns = @JoinColumn(name = "idDespensa"),
