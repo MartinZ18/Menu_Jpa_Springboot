@@ -249,6 +249,9 @@ function renderCuenta() {
                 <div class="nav-cuenta-usuario">${escapeHtml(Auth.getUsuario())}</div>
                 <div class="nav-cuenta-rol">${escapeHtml(NOMBRES_ROL[Auth.getRol()] || Auth.getRol())}</div>
             </div>
+            <a href="#" class="nav-link" onclick="abrirModalCambiarContrasenia(); return false;">
+                <i class="bi bi-key"></i><span>Cambiar contraseña</span>
+            </a>
             <a href="#" class="nav-link" onclick="Auth.logout(); return false;">
                 <i class="bi bi-box-arrow-right"></i><span>Cerrar sesión</span>
             </a>`;
@@ -264,6 +267,68 @@ function aplicarVisibilidadPorRol() {
         const roles = el.getAttribute('data-rol').split(',');
         el.style.display = Auth.tieneRol(...roles) ? '' : 'none';
     });
+}
+
+// ─── Modal "Cambiar contraseña" ──────────────────────────────────────────────
+// Se inyecta una sola vez en el DOM (lazy, como el toastContainer de mostrarAlerta)
+// para no tener que duplicar el markup del modal en las 14 paginas.
+function abrirModalCambiarContrasenia() {
+    if (!document.getElementById('modalCambiarContraseniaOverlay')) {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.id = 'modalCambiarContraseniaOverlay';
+        overlay.innerHTML = `
+            <div class="modal modal-sm">
+                <div class="modal-header">
+                    <h3 class="modal-title">Cambiar contraseña</h3>
+                    <button class="modal-close" onclick="modalHide('modalCambiarContraseniaOverlay')"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Contraseña actual <span class="required">*</span></label>
+                        <input type="password" class="form-input" id="ccActual" autocomplete="current-password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contraseña nueva <span class="required">*</span></label>
+                        <input type="password" class="form-input" id="ccNueva" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Repetir contraseña nueva <span class="required">*</span></label>
+                        <input type="password" class="form-input" id="ccRepetir" autocomplete="new-password">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-ghost" onclick="modalHide('modalCambiarContraseniaOverlay')">Cancelar</button>
+                    <button class="btn btn-primary" onclick="enviarCambioContrasenia()">
+                        <i class="bi bi-check-lg"></i> Guardar
+                    </button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', e => { if (e.target === overlay) modalHide(overlay.id); });
+    }
+    document.getElementById('ccActual').value = '';
+    document.getElementById('ccNueva').value = '';
+    document.getElementById('ccRepetir').value = '';
+    modalShow('modalCambiarContraseniaOverlay');
+}
+
+async function enviarCambioContrasenia() {
+    const actual  = document.getElementById('ccActual').value;
+    const nueva   = document.getElementById('ccNueva').value;
+    const repetir = document.getElementById('ccRepetir').value;
+
+    if (!Validar.requerido(actual, 'Contraseña actual')) return;
+    if (nueva.length < 8) { mostrarAlerta('La contraseña nueva debe tener al menos 8 caracteres.', 'warning'); return; }
+    if (nueva !== repetir) { mostrarAlerta('Las contraseñas nuevas no coinciden.', 'warning'); return; }
+
+    const resultado = await apiFetch('/api/v1/auth/contrasenia', 'PUT', {
+        contraseniaActual: actual, contraseniaNueva: nueva
+    });
+    if (resultado) {
+        mostrarAlerta('Contraseña actualizada correctamente.', 'success');
+        modalHide('modalCambiarContraseniaOverlay');
+    }
 }
 
 // ─── Event listeners globales ────────────────────────────────────────────────
