@@ -1,11 +1,12 @@
 package com.menujpa.controllers;
 
 import com.menujpa.dto.AuthResponse;
+import com.menujpa.dto.CambiarContraseniaRequest;
 import com.menujpa.dto.LoginRequest;
 import com.menujpa.dto.RegistroRequest;
 import com.menujpa.entities.Cliente;
-import com.menujpa.repositories.ClienteRepository;
 import com.menujpa.security.JwtService;
+import com.menujpa.security.MultiRoleUserDetailsService;
 import com.menujpa.services.ClienteServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,14 +33,14 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final ClienteServiceImpl clienteService;
-    private final ClienteRepository clienteRepository;
+    private final MultiRoleUserDetailsService multiRoleUserDetailsService;
 
     public AuthController(AuthenticationManager authenticationManager, JwtService jwtService,
-                           ClienteServiceImpl clienteService, ClienteRepository clienteRepository) {
+                           ClienteServiceImpl clienteService, MultiRoleUserDetailsService multiRoleUserDetailsService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.clienteService = clienteService;
-        this.clienteRepository = clienteRepository;
+        this.multiRoleUserDetailsService = multiRoleUserDetailsService;
     }
 
     @Operation(summary = "Registrar un nuevo cliente")
@@ -51,7 +52,10 @@ public class AuthController {
                 .collect(Collectors.joining(", "));
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", errores));
         }
-        if (clienteRepository.existsByUsuario(datos.getUsuario())) {
+        // Chequeo cruzado a las 4 tablas de rol: "usuario" no tiene un UNIQUE global en la
+        // base (cada rol es una tabla separada), asi que sin esto un Cliente podria registrarse
+        // con el mismo usuario que ya tiene un Chef/Mesero/Gerente.
+        if (multiRoleUserDetailsService.existeUsuario(datos.getUsuario())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("error", "El usuario \"" + datos.getUsuario() + "\" ya está en uso."));
         }
@@ -93,6 +97,25 @@ public class AuthController {
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "Usuario o contraseña incorrectos"));
+        }
+    }
+
+    @Operation(summary = "Cambiar la propia contraseña (requiere estar autenticado y saber la actual)")
+    @PutMapping("/contrasenia")
+    public ResponseEntity<?> cambiarContrasenia(@Valid @RequestBody CambiarContraseniaRequest datos,
+                                                 BindingResult bindingResult, Authentication authentication) {
+        if (bindingResult.hasErrors()) {
+            String errores = bindingResult.getFieldErrors().stream()
+                .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", errores));
+        }
+        try {
+            multiRoleUserDetailsService.cambiarContrasenia(
+                authentication.getName(), datos.getContraseniaActual(), datos.getContraseniaNueva());
+            return ResponseEntity.ok(Map.of("mensaje", "Contraseña actualizada correctamente."));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 }

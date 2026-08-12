@@ -16,4 +16,9 @@ public final class PasswordHasher {
         if (BCRYPT_PATTERN.matcher(contrasenia).matches()) return contrasenia;
         return ENCODER.encode(contrasenia);
     }
+
+    public static boolean matches(String contraseniaSinHashear, String contraseniaHasheada) {
+        if (contraseniaSinHashear == null || contraseniaHasheada == null) return false;
+        return ENCODER.matches(contraseniaSinHashear, contraseniaHasheada);
+    }
 }

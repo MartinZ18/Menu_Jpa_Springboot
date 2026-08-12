@@ -57,7 +57,7 @@
             <h1 class="page-title">Menús</h1>
             <p class="page-subtitle">Asigná gerentes y gestioná las recetas de cada menú</p>
         </div>
-        <button class="btn btn-primary" onclick="abrirModalNuevo()">
+        <button class="btn btn-primary" data-rol="GERENTE,CHEF" onclick="abrirModalNuevo()">
             <i class="bi bi-plus"></i> Nuevo Menú
         </button>
     </header>
@@ -91,7 +91,7 @@
                     <div class="detail-title" id="detalleNombre">—</div>
                     <div class="detail-sub" id="detalleGerente"></div>
                 </div>
-                <div class="detail-actions">
+                <div class="detail-actions" data-rol="GERENTE,CHEF">
                     <button class="btn btn-ghost btn-sm" onclick="editarMenuActual()">
                         <i class="bi bi-pencil"></i> Editar
                     </button>

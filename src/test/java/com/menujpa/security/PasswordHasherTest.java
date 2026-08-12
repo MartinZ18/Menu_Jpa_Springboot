@@ -33,4 +33,24 @@ class PasswordHasherTest {
     void hashIfNeeded_conVacio_loDejaIgual() {
         assertThat(PasswordHasher.hashIfNeeded("")).isEqualTo("");
     }
+
+    @Test
+    void matches_conLaContraseniaCorrecta_devuelveTrue() {
+        String hash = PasswordHasher.hashIfNeeded("miClave123");
+
+        assertThat(PasswordHasher.matches("miClave123", hash)).isTrue();
+    }
+
+    @Test
+    void matches_conLaContraseniaIncorrecta_devuelveFalse() {
+        String hash = PasswordHasher.hashIfNeeded("miClave123");
+
+        assertThat(PasswordHasher.matches("otraClave", hash)).isFalse();
+    }
+
+    @Test
+    void matches_conAlgunArgumentoNull_devuelveFalse() {
+        assertThat(PasswordHasher.matches(null, "hash")).isFalse();
+        assertThat(PasswordHasher.matches("clave", null)).isFalse();
+    }
 }

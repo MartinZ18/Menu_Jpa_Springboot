@@ -1,6 +1,7 @@
 package com.menujpa.config;
 
 import com.menujpa.security.JwtAuthenticationFilter;
+import com.menujpa.security.RateLimitFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -23,9 +24,11 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RateLimitFilter rateLimitFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, RateLimitFilter rateLimitFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.rateLimitFilter = rateLimitFilter;
     }
 
     @Bean
@@ -54,6 +57,13 @@ public class SecurityConfig {
         "/api/v1/pedidos/*/modificar", "/api/v1/pedidos/*/entregar", "/api/v1/pedidos/*/cancelar"
     };
 
+    // Menu/Receta/Alimento estaban abiertos a cualquier rol autenticado (Cliente incluido) para
+    // crear/editar/borrar. Se restringe a GERENTE (dueño del menu) y CHEF (dueño de recetas e
+    // ingredientes de cocina), que son los roles que en el dominio real administran esto.
+    private static final String[] GESTION_CATALOGO = {
+        "/api/v1/menus/**", "/api/v1/recetas/**", "/api/v1/alimentos/**"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -70,7 +80,7 @@ public class SecurityConfig {
                     "/despensas", "/mesas", "/pedidos", "/pagos", "/reservas",
                     "/css/**", "/js/**", "/webjars/**",
                     "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
-                    "/api/v1/auth/**"
+                    "/api/v1/auth/login", "/api/v1/auth/registrarse"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, DATOS_SENSIBLES_GET).hasRole("GERENTE")
                 // Clientes tambien trae PII (cedula/telefono/correo), pero un MESERO necesita
@@ -84,13 +94,17 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, GESTION_STAFF).hasRole("GERENTE")
                 .requestMatchers(HttpMethod.PUT, GESTION_STAFF).hasRole("GERENTE")
                 .requestMatchers(HttpMethod.DELETE, GESTION_STAFF).hasRole("GERENTE")
+                .requestMatchers(HttpMethod.POST, GESTION_CATALOGO).hasAnyRole("GERENTE", "CHEF")
+                .requestMatchers(HttpMethod.PUT, GESTION_CATALOGO).hasAnyRole("GERENTE", "CHEF")
+                .requestMatchers(HttpMethod.DELETE, GESTION_CATALOGO).hasAnyRole("GERENTE", "CHEF")
                 // Solo un mesero "toma" un pedido nuevo; el gerente supervisa los ya tomados
                 // (modificar/entregar/cancelar), pero no origina pedidos -- no tiene fila en Mesero.
                 .requestMatchers(HttpMethod.POST, "/api/v1/pedidos/tomar").hasRole("MESERO")
                 .requestMatchers(ACCIONES_PEDIDO_MESERO_O_GERENTE).hasAnyRole("MESERO", "GERENTE")
                 .requestMatchers(HttpMethod.POST, "/api/v1/reservas/reservar").hasRole("CLIENTE")
                 .anyRequest().authenticated())
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

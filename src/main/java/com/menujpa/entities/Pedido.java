@@ -3,6 +3,7 @@ package com.menujpa.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -14,12 +15,15 @@ import java.util.List;
 public class Pedido extends Base {
 
     // Relación con Cliente: "Manipula" en el diagrama, cliente : Cliente (composición)
+    // @BatchSize: al listar varios Pedido, Hibernate trae estas colecciones LAZY con un IN (...)
+    // por lote de 20 pedidos en vez de una query por fila (N+1) al recorrerlas.
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "pedido_cliente",
         joinColumns = @JoinColumn(name = "idPedido"),
         inverseJoinColumns = @JoinColumn(name = "idCliente")
     )
+    @BatchSize(size = 20)
     private List<Cliente> clientes = new ArrayList<>();
 
     // Relación con Mesero: miMesero : 1..* en el diagrama
@@ -29,6 +33,7 @@ public class Pedido extends Base {
         joinColumns = @JoinColumn(name = "idPedido"),
         inverseJoinColumns = @JoinColumn(name = "idMesero")
     )
+    @BatchSize(size = 20)
     private List<Mesero> meseros = new ArrayList<>();
 
     // Relación con Alimento: alimentosAdquiridos — composición (diamante lleno en diagrama)
