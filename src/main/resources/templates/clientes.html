@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes — MenuJPA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+
+<div class="topbar">
+    <div class="topbar-logo"><div class="topbar-logo-mark">MJ</div>MenuJPA</div>
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menú"><i class="bi bi-list"></i></button>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<nav class="nav-sidebar">
+    <a href="/" class="nav-logo">
+        <div class="nav-logo-mark">MJ</div>
+        <div class="nav-logo-text">MenuJPA <span>Gestión gastronómica</span></div>
+    </a>
+    <div class="nav-section">
+        <span class="nav-section-label">Gestión</span>
+        <a href="/menus"        class="nav-link"><i class="bi bi-list-ul"></i><span>Menús</span></a>
+        <a href="/recetas"      class="nav-link"><i class="bi bi-card-list"></i><span>Recetas</span></a>
+        <a href="/alimentos"    class="nav-link"><i class="bi bi-basket"></i><span>Alimentos</span></a>
+        <a href="/ingredientes" class="nav-link" data-rol="GERENTE"><i class="bi bi-egg-fried"></i><span>Ingredientes</span></a>
+        <a href="/despensas"    class="nav-link" data-rol="GERENTE"><i class="bi bi-box-seam"></i><span>Despensas</span></a>
+    </div>
+    <div class="nav-section">
+        <span class="nav-section-label">Personal</span>
+        <a href="/chefs"    class="nav-link" data-rol="GERENTE"><i class="bi bi-person-badge"></i><span>Chefs</span></a>
+        <a href="/meseros"  class="nav-link" data-rol="GERENTE"><i class="bi bi-person-vcard"></i><span>Meseros</span></a>
+        <a href="/gerentes" class="nav-link" data-rol="GERENTE"><i class="bi bi-person-workspace"></i><span>Gerentes</span></a>
+        <a href="/pagos"    class="nav-link" data-rol="GERENTE"><i class="bi bi-cash-coin"></i><span>Pagos</span></a>
+    </div>
+    <div class="nav-section">
+        <span class="nav-section-label">Operaciones</span>
+        <a href="/clientes" class="nav-link active" data-rol="GERENTE"><i class="bi bi-people"></i><span>Clientes</span></a>
+        <a href="/mesas"    class="nav-link" data-rol="GERENTE,MESERO"><i class="bi bi-grid-3x3-gap"></i><span>Mesas</span></a>
+        <a href="/pedidos"  class="nav-link" data-rol="GERENTE,MESERO"><i class="bi bi-receipt"></i><span>Pedidos</span></a>
+        <a href="/reservas" class="nav-link" data-rol="GERENTE,MESERO,CLIENTE"><i class="bi bi-calendar-check"></i><span>Reservas</span></a>
+    </div>
+    <div class="nav-cuenta" id="navCuenta"></div>
+</nav>
+
+<main class="page-content">
+    <header class="page-header">
+        <div>
+            <h1 class="page-title">Clientes</h1>
+            <p class="page-subtitle">Registro de clientes. El alta se hace por autoregistro en /registro.</p>
+        </div>
+    </header>
+
+    <div class="table-wrapper">
+        <div class="table-header"><span class="table-title">Clientes registrados</span></div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th><th>Apellido, Nombre</th><th>Usuario</th><th>Teléfono</th><th>Correo</th><th></th>
+                    </tr>
+                </thead>
+                <tbody id="bodyClientes">
+                    <tr><td colspan="6" style="padding:0"><div class="empty-state"><div class="spinner"></div></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Editar Cliente -->
+<div class="modal-overlay" id="modalClienteOverlay">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <h3 class="modal-title">Editar Cliente</h3>
+            <button class="modal-close" onclick="modalHide('modalClienteOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="clienteId">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Nombre <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="nombre" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Apellido <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="apellido" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cédula / DNI</label>
+                    <input type="text" class="form-input" id="cedula" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" class="form-input" id="telefono" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Correo</label>
+                    <input type="email" class="form-input" id="correo" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Usuario (login)</label>
+                    <input type="text" class="form-input" id="usuario" maxlength="100">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalClienteOverlay')">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarCliente()"><i class="bi bi-check-lg"></i> Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Eliminar -->
+<div class="modal-overlay" id="modalEliminarOverlay">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <h3 class="modal-title">Confirmar eliminación</h3>
+            <button class="modal-close" onclick="modalHide('modalEliminarOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body"><p class="confirm-text">¿Eliminar este cliente? Falla si tiene pedidos asociados.</p></div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalEliminarOverlay')">Cancelar</button>
+            <button class="btn btn-danger" id="btnConfirmarEliminar"><i class="bi bi-trash"></i> Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/api.js}"></script>
+<script>
+const API = '/api/v1/clientes';
+
+async function cargarClientes() {
+    const data = await cargarConEstado(() => apiFetch(API), 'bodyClientes', 6, 'bi-people', 'No hay clientes registrados');
+    if (!data || data.length === 0) return;
+
+    document.getElementById('bodyClientes').innerHTML = data.map(c => `
+        <tr>
+            <td><span class="badge badge-default">${c.id}</span></td>
+            <td><strong>${escapeHtml(c.apellido || '—')}</strong>${c.nombre ? ', ' + escapeHtml(c.nombre) : ''}</td>
+            <td>${escapeHtml(c.usuario || '—')}</td>
+            <td>${escapeHtml(c.telefono || '—')}</td>
+            <td>${escapeHtml(c.correo || '—')}</td>
+            <td>
+                <div class="td-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="editarCliente(${c.id})" title="Editar"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-danger btn-sm" onclick="confirmarEliminar(${c.id})" title="Eliminar"><i class="bi bi-trash"></i></button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function editarCliente(id) {
+    const c = await apiFetch(`${API}/${id}`);
+    if (!c) return;
+    document.getElementById('clienteId').value  = c.id;
+    document.getElementById('nombre').value     = c.nombre || '';
+    document.getElementById('apellido').value   = c.apellido || '';
+    document.getElementById('cedula').value     = c.cedula || '';
+    document.getElementById('telefono').value   = c.telefono || '';
+    document.getElementById('correo').value     = c.correo || '';
+    document.getElementById('usuario').value    = c.usuario || '';
+    modalShow('modalClienteOverlay');
+}
+
+async function guardarCliente() {
+    const nombre   = document.getElementById('nombre').value.trim();
+    const apellido = document.getElementById('apellido').value.trim();
+    const correo   = document.getElementById('correo').value.trim();
+    if (!Validar.requerido(nombre,   'Nombre'))   return;
+    if (!Validar.requerido(apellido, 'Apellido')) return;
+    if (!Validar.email(correo))                   return;
+
+    const id   = document.getElementById('clienteId').value;
+    const body = {
+        id: parseInt(id), nombre, apellido,
+        cedula:   document.getElementById('cedula').value.trim() || null,
+        telefono: document.getElementById('telefono').value.trim() || null,
+        correo:   correo || null,
+        usuario:  document.getElementById('usuario').value.trim() || null
+    };
+
+    const result = await apiFetch(`${API}/${id}`, 'PUT', body);
+    if (result) {
+        modalHide('modalClienteOverlay');
+        mostrarAlerta('Cliente actualizado correctamente.', 'success');
+        cargarClientes();
+    }
+}
+
+function confirmarEliminar(id) {
+    document.getElementById('btnConfirmarEliminar').onclick = async () => {
+        const ok = await apiFetch(`${API}/${id}`, 'DELETE');
+        if (ok) {
+            modalHide('modalEliminarOverlay');
+            mostrarAlerta('Cliente eliminado correctamente.', 'success');
+            cargarClientes();
+        }
+    };
+    modalShow('modalEliminarOverlay');
+}
+
+cargarClientes();
+</script>
+</body>
+</html>
