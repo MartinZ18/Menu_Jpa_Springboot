@@ -234,11 +234,18 @@ async function cargarRecetas() {
 }
 
 async function cargarSelectores() {
-    const chefs = await apiFetch('/api/v1/chefs');
+    // GET /api/v1/chefs es GERENTE-only (trae salario). Igual que con el gerente de Menu, para
+    // el resto de los roles el select queda vacio en vez de mostrar el toast de error generico.
+    let chefs = [];
+    try {
+        const res = await fetch('/api/v1/chefs', { headers: Auth.getToken() ? { 'Authorization': 'Bearer ' + Auth.getToken() } : {} });
+        chefs = res.ok ? await res.json() : [];
+    } catch { /* select queda vacio */ }
     const selChef = document.getElementById('chefSeleccionado');
     selChef.innerHTML = '<option value="">Sin asignar</option>';
-    (chefs || []).forEach(c => {
-        selChef.innerHTML += `<option value="${c.apellido}, ${c.nombre}">${c.apellido}, ${c.nombre}</option>`;
+    chefs.forEach(c => {
+        const nombreCompleto = `${c.apellido}, ${c.nombre}`;
+        selChef.innerHTML += `<option value="${escapeHtml(nombreCompleto)}">${escapeHtml(nombreCompleto)}</option>`;
     });
 
     todosAlimentos = await apiFetch('/api/v1/alimentos') || [];

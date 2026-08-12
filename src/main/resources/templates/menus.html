@@ -231,11 +231,19 @@ async function cargarMenus() {
 }
 
 async function cargarGerentes() {
-    todosGerentes = await apiFetch(API_GERENTES) || [];
+    // GET /api/v1/gerentes es GERENTE-only (trae cedula/telefono/correo). Para el resto de los
+    // roles el select queda en "Sin asignar" nada mas -- es un dato opcional del formulario, no
+    // hace falta el toast de error generico de apiFetch para un fetch que va a fallar a proposito.
+    try {
+        const res = await fetch(API_GERENTES, { headers: Auth.getToken() ? { 'Authorization': 'Bearer ' + Auth.getToken() } : {} });
+        todosGerentes = res.ok ? await res.json() : [];
+    } catch {
+        todosGerentes = [];
+    }
     const sel = document.getElementById('menuGerente');
     sel.innerHTML = '<option value="">Sin asignar</option>';
     todosGerentes.forEach(g => {
-        sel.innerHTML += `<option value="${g.id}">${g.apellido}, ${g.nombre}</option>`;
+        sel.innerHTML += `<option value="${g.id}">${escapeHtml(g.apellido)}, ${escapeHtml(g.nombre)}</option>`;
     });
 }
 

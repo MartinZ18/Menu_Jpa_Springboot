@@ -40,7 +40,14 @@ public class SecurityConfig {
 
     private static final String[] GESTION_STAFF = {
         "/api/v1/chefs/**", "/api/v1/meseros/**", "/api/v1/gerentes/**",
-        "/api/v1/despensas/**", "/api/v1/ingredientes/**", "/api/v1/pagos/**", "/api/v1/mesas/**"
+        "/api/v1/despensas/**", "/api/v1/ingredientes/**", "/api/v1/pagos/**",
+        "/api/v1/mesas/**", "/api/v1/clientes/**"
+    };
+
+    // Estas colecciones traen datos sensibles (salario, cedula, telefono, correo, usuario) que
+    // no tenian ninguna proteccion: caian en el permitAll generico de GET /api/v1/**.
+    private static final String[] DATOS_SENSIBLES_GET = {
+        "/api/v1/pagos/**", "/api/v1/chefs/**", "/api/v1/meseros/**", "/api/v1/gerentes/**"
     };
 
     private static final String[] ACCIONES_PEDIDO_MESERO_O_GERENTE = {
@@ -65,7 +72,11 @@ public class SecurityConfig {
                     "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                     "/api/v1/auth/**"
                 ).permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/pagos/**").hasRole("GERENTE")
+                .requestMatchers(HttpMethod.GET, DATOS_SENSIBLES_GET).hasRole("GERENTE")
+                // Clientes tambien trae PII (cedula/telefono/correo), pero un MESERO necesita
+                // listarlos para elegir a quien pertenece un pedido al tomarlo/modificarlo.
+                .requestMatchers(HttpMethod.GET, "/api/v1/clientes/**").hasAnyRole("GERENTE", "MESERO")
+                .requestMatchers(HttpMethod.GET, "/api/v1/pedidos/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/reservas/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/chefs/fichar/**").hasRole("CHEF")

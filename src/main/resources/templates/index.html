@@ -207,7 +207,8 @@ async function cargarStats() {
     ];
     for (const { url, id } of endpoints) {
         try {
-            const res  = await fetch(url);
+            const headers = Auth.getToken() ? { 'Authorization': 'Bearer ' + Auth.getToken() } : {};
+            const res  = await fetch(url, { headers });
             if (!res.ok) throw new Error('HTTP ' + res.status);
             const data = await res.json();
             document.getElementById(id).textContent = Array.isArray(data) ? data.length : '?';
