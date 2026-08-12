@@ -267,12 +267,11 @@ menujpa-spring/
 │   │       │   ├── css/style.css
 │   │       │   └── js/api.js
 │   │       └── templates/
-│   │           ├── index.html
-│   │           ├── menus.html
-│   │           ├── recetas.html
-│   │           ├── alimentos.html
-│   │           ├── chefs.html
-│   │           └── gerentes.html
+│   │           ├── index.html, login.html, registro.html
+│   │           ├── menus.html, recetas.html, alimentos.html
+│   │           ├── chefs.html, meseros.html, gerentes.html
+│   │           ├── clientes.html, ingredientes.html, despensas.html
+│   │           └── mesas.html, pedidos.html, pagos.html, reservas.html
 │   └── test/java/com/menujpa/
 │       ├── SmokeTest.java
 │       ├── security/    PasswordHasherTest, JwtServiceTest
@@ -293,7 +292,7 @@ El sistema aplica validaciones en dos capas:
 - **Backend (Jakarta Validation):** `@NotBlank`, `@Size`, `@Email`, `@DecimalMin`, `@Past`, `@Pattern` en las entidades. Los errores se devuelven como JSON con mensaje descriptivo.
 - **Frontend (JavaScript):** validaciones antes de enviar cada formulario con mensajes toast.
 
-> El frontend (Thymeleaf) hoy solo cubre Menús, Recetas, Alimentos, Chefs y Gerentes — Clientes, Ingredientes, Despensas, Pedidos, Pagos, Mesas y Reservas todavía no tienen página propia. La API sí los expone completos; falta la UI.
+> El frontend (Thymeleaf) cubre las 12 entidades del sistema. Requiere login para todo lo que no sea Menús/Recetas/Alimentos — `/login` y `/registro` (alta pública de `Cliente`) son las puertas de entrada; la navegación se adapta al rol logueado.
 
 ---
 
