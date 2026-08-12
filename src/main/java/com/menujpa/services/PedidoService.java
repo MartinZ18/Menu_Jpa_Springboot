@@ -1,3 +1,10 @@
 package com.menujpa.services;
 import com.menujpa.entities.Pedido;
-public interface PedidoService extends BaseService<Pedido, Long> {}
+import java.util.List;
+
+public interface PedidoService extends BaseService<Pedido, Long> {
+    Pedido tomarPedido(String meseroUsuario, List<Long> clienteIds, List<Long> alimentoIds) throws Exception;
+    Pedido modificarPedido(Long pedidoId, List<Long> clienteIds, List<Long> alimentoIds) throws Exception;
+    Pedido entregarPedido(Long pedidoId) throws Exception;
+    void cancelarPedido(Long pedidoId) throws Exception;
+}

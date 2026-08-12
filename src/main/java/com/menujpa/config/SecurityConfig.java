@@ -43,6 +43,11 @@ public class SecurityConfig {
         "/api/v1/despensas/**", "/api/v1/ingredientes/**"
     };
 
+    private static final String[] ACCIONES_PEDIDO = {
+        "/api/v1/pedidos/tomar", "/api/v1/pedidos/*/modificar",
+        "/api/v1/pedidos/*/entregar", "/api/v1/pedidos/*/cancelar"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -60,6 +65,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, GESTION_STAFF).hasRole("GERENTE")
                 .requestMatchers(HttpMethod.PUT, GESTION_STAFF).hasRole("GERENTE")
                 .requestMatchers(HttpMethod.DELETE, GESTION_STAFF).hasRole("GERENTE")
+                .requestMatchers(ACCIONES_PEDIDO).hasAnyRole("MESERO", "GERENTE")
                 .anyRequest().authenticated())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
