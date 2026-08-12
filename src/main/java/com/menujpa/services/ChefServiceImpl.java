@@ -7,7 +7,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 @Service
-public class ChefServiceImpl extends BaseServiceImpl<Chef, Long> implements ChefService {
+public class ChefServiceImpl extends PersonaServiceImpl<Chef, Long> implements ChefService {
     @Autowired private ChefRepository chefRepository;
     @Autowired private RecetaRepository recetaRepository;
     public ChefServiceImpl(BaseRepository<Chef, Long> baseRepository) { super(baseRepository); }

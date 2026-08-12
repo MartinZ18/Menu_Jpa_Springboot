@@ -5,7 +5,7 @@ import com.menujpa.repositories.PedidoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 @Service
-public class MeseroServiceImpl extends BaseServiceImpl<Mesero, Long> implements MeseroService {
+public class MeseroServiceImpl extends PersonaServiceImpl<Mesero, Long> implements MeseroService {
     @Autowired private PedidoRepository pedidoRepository;
     public MeseroServiceImpl(BaseRepository<Mesero, Long> baseRepository) { super(baseRepository); }
     @Override

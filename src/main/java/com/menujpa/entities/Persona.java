@@ -1,5 +1,6 @@
 package com.menujpa.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -38,6 +39,7 @@ public class Persona extends Base {
 
     @Size(max = 255, message = "La contraseña no puede superar 255 caracteres")
     @Column(name = "contrasenia", length = 255)
+    @JsonIgnore
     private String contrasenia;
 
     @Override

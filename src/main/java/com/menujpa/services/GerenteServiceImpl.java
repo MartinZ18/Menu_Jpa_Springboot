@@ -6,7 +6,7 @@ import com.menujpa.repositories.MenuRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 @Service
-public class GerenteServiceImpl extends BaseServiceImpl<Gerente, Long> implements GerenteService {
+public class GerenteServiceImpl extends PersonaServiceImpl<Gerente, Long> implements GerenteService {
     @Autowired private GerenteRepository gerenteRepository;
     @Autowired private MenuRepository menuRepository;
     public GerenteServiceImpl(BaseRepository<Gerente, Long> baseRepository) { super(baseRepository); }
