@@ -188,7 +188,7 @@ class PedidoServiceImplTest {
         when(alimentoRepository.findById(5L)).thenReturn(Optional.of(nuevoAlimento));
         when(baseRepository.save(any(Pedido.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Pedido resultado = pedidoService.modificarPedido(1L, List.of(2L), List.of(5L));
+        Pedido resultado = pedidoService.modificarPedido(1L, List.of(2L), List.of(5L), "gerente1", true);
 
         assertThat(resultado.getPrecioTotalPedido()).isEqualTo(900.0);
     }
@@ -200,11 +200,53 @@ class PedidoServiceImplTest {
         pedido.setEstado(true);
         when(baseRepository.findById(1L)).thenReturn(Optional.of(pedido));
 
-        assertThatThrownBy(() -> pedidoService.modificarPedido(1L, List.of(2L), List.of(5L)))
+        assertThatThrownBy(() -> pedidoService.modificarPedido(1L, List.of(2L), List.of(5L), "gerente1", true))
             .isInstanceOf(Exception.class)
             .hasMessageContaining("ya entregado");
 
         verify(baseRepository, never()).save(any());
+    }
+
+    @Test
+    void modificarPedido_elMeseroQueLoTomo_puedeModificarlo() throws Exception {
+        Mesero mesero = new Mesero();
+        mesero.setUsuario("mesero1");
+        Pedido pedido = new Pedido();
+        pedido.setId(1L);
+        pedido.setEstado(false);
+        pedido.getMeseros().add(mesero);
+        Cliente cliente = new Cliente();
+        cliente.setId(2L);
+        Alimento alimento = new Alimento();
+        alimento.setId(5L);
+        alimento.setPrecio(900.0);
+
+        when(baseRepository.findById(1L)).thenReturn(Optional.of(pedido));
+        when(clienteRepository.findById(2L)).thenReturn(Optional.of(cliente));
+        when(alimentoRepository.findById(5L)).thenReturn(Optional.of(alimento));
+        when(baseRepository.save(any(Pedido.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Pedido resultado = pedidoService.modificarPedido(1L, List.of(2L), List.of(5L), "mesero1", false);
+
+        assertThat(resultado.getPrecioTotalPedido()).isEqualTo(900.0);
+    }
+
+    @Test
+    void modificarPedido_otroMeseroQueNoLoTomo_lanzaExcepcionYNoGuarda() {
+        Mesero meseroQueLoTomo = new Mesero();
+        meseroQueLoTomo.setUsuario("mesero1");
+        Pedido pedido = new Pedido();
+        pedido.setId(1L);
+        pedido.setEstado(false);
+        pedido.getMeseros().add(meseroQueLoTomo);
+        when(baseRepository.findById(1L)).thenReturn(Optional.of(pedido));
+
+        assertThatThrownBy(() -> pedidoService.modificarPedido(1L, List.of(2L), List.of(5L), "otro_mesero", false))
+            .isInstanceOf(Exception.class)
+            .hasMessageContaining("no tomaste vos");
+
+        verify(baseRepository, never()).save(any());
+        verifyNoInteractions(clienteRepository, alimentoRepository);
     }
 
     // --- entregarPedido ---
@@ -217,7 +259,7 @@ class PedidoServiceImplTest {
         when(baseRepository.findById(1L)).thenReturn(Optional.of(pedido));
         when(baseRepository.save(any(Pedido.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Pedido resultado = pedidoService.entregarPedido(1L);
+        Pedido resultado = pedidoService.entregarPedido(1L, "gerente1", true);
 
         assertThat(resultado.getEstado()).isTrue();
     }
@@ -229,9 +271,26 @@ class PedidoServiceImplTest {
         pedido.setEstado(true);
         when(baseRepository.findById(1L)).thenReturn(Optional.of(pedido));
 
-        assertThatThrownBy(() -> pedidoService.entregarPedido(1L))
+        assertThatThrownBy(() -> pedidoService.entregarPedido(1L, "gerente1", true))
             .isInstanceOf(Exception.class)
             .hasMessageContaining("ya fue entregado");
+    }
+
+    @Test
+    void entregarPedido_otroMeseroQueNoLoTomo_lanzaExcepcion() {
+        Mesero meseroQueLoTomo = new Mesero();
+        meseroQueLoTomo.setUsuario("mesero1");
+        Pedido pedido = new Pedido();
+        pedido.setId(1L);
+        pedido.setEstado(false);
+        pedido.getMeseros().add(meseroQueLoTomo);
+        when(baseRepository.findById(1L)).thenReturn(Optional.of(pedido));
+
+        assertThatThrownBy(() -> pedidoService.entregarPedido(1L, "otro_mesero", false))
+            .isInstanceOf(Exception.class)
+            .hasMessageContaining("no tomaste vos");
+
+        verify(baseRepository, never()).save(any());
     }
 
     // --- cancelarPedido ---
@@ -243,7 +302,7 @@ class PedidoServiceImplTest {
         pedido.setEstado(false);
         when(baseRepository.findById(1L)).thenReturn(Optional.of(pedido));
 
-        pedidoService.cancelarPedido(1L);
+        pedidoService.cancelarPedido(1L, "gerente1", true);
 
         verify(baseRepository).deleteById(1L);
     }
@@ -255,9 +314,26 @@ class PedidoServiceImplTest {
         pedido.setEstado(true);
         when(baseRepository.findById(1L)).thenReturn(Optional.of(pedido));
 
-        assertThatThrownBy(() -> pedidoService.cancelarPedido(1L))
+        assertThatThrownBy(() -> pedidoService.cancelarPedido(1L, "gerente1", true))
             .isInstanceOf(Exception.class)
             .hasMessageContaining("No se puede cancelar");
+
+        verify(baseRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void cancelarPedido_otroMeseroQueNoLoTomo_lanzaExcepcionYNoBorra() {
+        Mesero meseroQueLoTomo = new Mesero();
+        meseroQueLoTomo.setUsuario("mesero1");
+        Pedido pedido = new Pedido();
+        pedido.setId(1L);
+        pedido.setEstado(false);
+        pedido.getMeseros().add(meseroQueLoTomo);
+        when(baseRepository.findById(1L)).thenReturn(Optional.of(pedido));
+
+        assertThatThrownBy(() -> pedidoService.cancelarPedido(1L, "otro_mesero", false))
+            .isInstanceOf(Exception.class)
+            .hasMessageContaining("no tomaste vos");
 
         verify(baseRepository, never()).deleteById(any());
     }

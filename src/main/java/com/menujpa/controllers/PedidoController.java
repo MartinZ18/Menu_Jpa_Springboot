@@ -62,40 +62,47 @@ public class PedidoController {
         }
     }
 
-    @Operation(summary = "Modificar los alimentos de un pedido no entregado")
+    @Operation(summary = "Modificar los alimentos de un pedido no entregado (solo el mesero que lo tomó, o un gerente)")
     @PutMapping("/{id}/modificar")
     public ResponseEntity<?> modificarPedido(@PathVariable Long id, @Valid @RequestBody PedidoRequest datos,
-                                              BindingResult bindingResult) {
+                                              BindingResult bindingResult, Authentication authentication) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", errores(bindingResult)));
         }
         try {
-            var pedido = pedidoService.modificarPedido(id, datos.getClienteIds(), datos.getAlimentoIds());
+            var pedido = pedidoService.modificarPedido(id, datos.getClienteIds(), datos.getAlimentoIds(),
+                authentication.getName(), esGerente(authentication));
             return ResponseEntity.ok(pedido);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 
-    @Operation(summary = "Marcar un pedido como entregado")
+    @Operation(summary = "Marcar un pedido como entregado (solo el mesero que lo tomó, o un gerente)")
     @PostMapping("/{id}/entregar")
-    public ResponseEntity<?> entregarPedido(@PathVariable Long id) {
+    public ResponseEntity<?> entregarPedido(@PathVariable Long id, Authentication authentication) {
         try {
-            return ResponseEntity.ok(pedidoService.entregarPedido(id));
+            var pedido = pedidoService.entregarPedido(id, authentication.getName(), esGerente(authentication));
+            return ResponseEntity.ok(pedido);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 
-    @Operation(summary = "Cancelar un pedido no entregado")
+    @Operation(summary = "Cancelar un pedido no entregado (solo el mesero que lo tomó, o un gerente)")
     @PostMapping("/{id}/cancelar")
-    public ResponseEntity<?> cancelarPedido(@PathVariable Long id) {
+    public ResponseEntity<?> cancelarPedido(@PathVariable Long id, Authentication authentication) {
         try {
-            pedidoService.cancelarPedido(id);
+            pedidoService.cancelarPedido(id, authentication.getName(), esGerente(authentication));
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
+    }
+
+    private boolean esGerente(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_GERENTE"));
     }
 
     private String errores(BindingResult bindingResult) {

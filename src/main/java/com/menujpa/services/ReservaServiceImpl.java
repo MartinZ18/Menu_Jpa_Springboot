@@ -81,4 +81,24 @@ public class ReservaServiceImpl extends BaseServiceImpl<Reserva, Long> implement
             baseRepository.save(reserva);
         } catch (Exception e) { throw new Exception(e.getMessage()); }
     }
+
+    @Override
+    public List<Reserva> misReservas(String clienteUsuario) throws Exception {
+        try {
+            return reservaRepository.findByClienteUsuario(clienteUsuario);
+        } catch (Exception e) { throw new Exception(e.getMessage()); }
+    }
+
+    @Override
+    public Reserva obtenerParaUsuario(Long reservaId, String usuarioSolicitante, boolean esStaff) throws Exception {
+        try {
+            Reserva reserva = baseRepository.findById(reservaId)
+                .orElseThrow(() -> new Exception("Entidad no encontrada con id: " + reservaId));
+
+            if (!esStaff && !reserva.getCliente().getUsuario().equals(usuarioSolicitante))
+                throw new Exception("No podés ver una reserva que no es tuya.");
+
+            return reserva;
+        } catch (Exception e) { throw new Exception(e.getMessage()); }
+    }
 }

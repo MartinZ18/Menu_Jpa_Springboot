@@ -206,4 +206,53 @@ class ReservaServiceImplTest {
             .isInstanceOf(Exception.class)
             .hasMessageContaining("ya estaba cancelada");
     }
+
+    // --- misReservas / obtenerParaUsuario ---
+
+    @Test
+    void misReservas_devuelveSoloLasDelClienteIndicado() throws Exception {
+        Reserva reserva = new Reserva();
+        reserva.setId(1L);
+        when(reservaRepository.findByClienteUsuario("marta")).thenReturn(List.of(reserva));
+
+        assertThat(reservaService.misReservas("marta")).containsExactly(reserva);
+    }
+
+    @Test
+    void obtenerParaUsuario_elClienteDuenio_laVe() throws Exception {
+        Cliente cliente = new Cliente();
+        cliente.setUsuario("marta");
+        Reserva reserva = new Reserva();
+        reserva.setId(1L);
+        reserva.setCliente(cliente);
+        when(baseRepository.findById(1L)).thenReturn(Optional.of(reserva));
+
+        assertThat(reservaService.obtenerParaUsuario(1L, "marta", false)).isEqualTo(reserva);
+    }
+
+    @Test
+    void obtenerParaUsuario_otroClienteSinSerStaff_lanzaExcepcion() {
+        Cliente cliente = new Cliente();
+        cliente.setUsuario("marta");
+        Reserva reserva = new Reserva();
+        reserva.setId(1L);
+        reserva.setCliente(cliente);
+        when(baseRepository.findById(1L)).thenReturn(Optional.of(reserva));
+
+        assertThatThrownBy(() -> reservaService.obtenerParaUsuario(1L, "otro_cliente", false))
+            .isInstanceOf(Exception.class)
+            .hasMessageContaining("no es tuya");
+    }
+
+    @Test
+    void obtenerParaUsuario_staff_puedeVerCualquierReserva() throws Exception {
+        Cliente cliente = new Cliente();
+        cliente.setUsuario("marta");
+        Reserva reserva = new Reserva();
+        reserva.setId(1L);
+        reserva.setCliente(cliente);
+        when(baseRepository.findById(1L)).thenReturn(Optional.of(reserva));
+
+        assertThat(reservaService.obtenerParaUsuario(1L, "un_mesero", true)).isEqualTo(reserva);
+    }
 }

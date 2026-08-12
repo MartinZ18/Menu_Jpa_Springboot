@@ -61,6 +61,8 @@ public class SecurityConfig {
                     "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                     "/api/v1/auth/**"
                 ).permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/pagos/**").hasRole("GERENTE")
+                .requestMatchers(HttpMethod.GET, "/api/v1/reservas/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/chefs/fichar/**").hasRole("CHEF")
                 .requestMatchers(HttpMethod.POST, "/api/v1/meseros/fichar/**").hasRole("MESERO")

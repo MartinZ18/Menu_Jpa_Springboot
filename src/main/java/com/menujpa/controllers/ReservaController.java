@@ -27,24 +27,33 @@ public class ReservaController {
     @Autowired
     private ReservaServiceImpl reservaService;
 
-    @Operation(summary = "Listar todas las reservas")
+    @Operation(summary = "Listar reservas: todas si sos staff, solo las propias si sos cliente")
     @GetMapping("")
-    public ResponseEntity<?> getAll() {
+    public ResponseEntity<?> getAll(Authentication authentication) {
         try {
-            return ResponseEntity.ok(reservaService.findAll());
+            var reservas = esStaff(authentication)
+                ? reservaService.findAll()
+                : reservaService.misReservas(authentication.getName());
+            return ResponseEntity.ok(reservas);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
     }
 
-    @Operation(summary = "Obtener una reserva por id")
+    @Operation(summary = "Obtener una reserva por id (solo si sos staff o el cliente dueño)")
     @GetMapping("/{id}")
-    public ResponseEntity<?> getOne(@PathVariable Long id) {
+    public ResponseEntity<?> getOne(@PathVariable Long id, Authentication authentication) {
         try {
-            return ResponseEntity.ok(reservaService.findById(id));
+            var reserva = reservaService.obtenerParaUsuario(id, authentication.getName(), esStaff(authentication));
+            return ResponseEntity.ok(reserva);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
+    }
+
+    private boolean esStaff(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_GERENTE") || a.getAuthority().equals("ROLE_MESERO"));
     }
 
     @Operation(summary = "Reservar una mesa (cliente autenticado)")

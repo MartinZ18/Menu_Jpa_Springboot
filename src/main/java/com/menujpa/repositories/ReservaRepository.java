@@ -7,4 +7,5 @@ import java.util.List;
 public interface ReservaRepository extends BaseRepository<Reserva, Long> {
     List<Reserva> findByMesaIdAndFechaAndEstado(Long mesaId, Date fecha, String estado);
     boolean existsByMesaIdAndEstado(Long mesaId, String estado);
+    List<Reserva> findByClienteUsuario(String usuario);
 }

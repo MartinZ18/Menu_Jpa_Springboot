@@ -45,10 +45,12 @@ public class PedidoServiceImpl extends BaseServiceImpl<Pedido, Long> implements 
     }
 
     @Override @Transactional
-    public Pedido modificarPedido(Long pedidoId, List<Long> clienteIds, List<Long> alimentoIds) throws Exception {
+    public Pedido modificarPedido(Long pedidoId, List<Long> clienteIds, List<Long> alimentoIds,
+                                   String usuarioSolicitante, boolean esGerente) throws Exception {
         try {
             Pedido pedido = baseRepository.findById(pedidoId)
                 .orElseThrow(() -> new Exception("Pedido no encontrado con id: " + pedidoId));
+            verificarPropiedad(pedido, usuarioSolicitante, esGerente);
             if (Boolean.TRUE.equals(pedido.getEstado()))
                 throw new Exception("No se puede modificar un pedido ya entregado.");
 
@@ -58,10 +60,11 @@ public class PedidoServiceImpl extends BaseServiceImpl<Pedido, Long> implements 
     }
 
     @Override @Transactional
-    public Pedido entregarPedido(Long pedidoId) throws Exception {
+    public Pedido entregarPedido(Long pedidoId, String usuarioSolicitante, boolean esGerente) throws Exception {
         try {
             Pedido pedido = baseRepository.findById(pedidoId)
                 .orElseThrow(() -> new Exception("Pedido no encontrado con id: " + pedidoId));
+            verificarPropiedad(pedido, usuarioSolicitante, esGerente);
             if (Boolean.TRUE.equals(pedido.getEstado()))
                 throw new Exception("El pedido ya fue entregado.");
 
@@ -71,15 +74,24 @@ public class PedidoServiceImpl extends BaseServiceImpl<Pedido, Long> implements 
     }
 
     @Override @Transactional
-    public void cancelarPedido(Long pedidoId) throws Exception {
+    public void cancelarPedido(Long pedidoId, String usuarioSolicitante, boolean esGerente) throws Exception {
         try {
             Pedido pedido = baseRepository.findById(pedidoId)
                 .orElseThrow(() -> new Exception("Pedido no encontrado con id: " + pedidoId));
+            verificarPropiedad(pedido, usuarioSolicitante, esGerente);
             if (Boolean.TRUE.equals(pedido.getEstado()))
                 throw new Exception("No se puede cancelar un pedido ya entregado.");
 
             baseRepository.deleteById(pedidoId);
         } catch (Exception e) { throw new Exception(e.getMessage()); }
+    }
+
+    private void verificarPropiedad(Pedido pedido, String usuarioSolicitante, boolean esGerente) throws Exception {
+        if (esGerente) return;
+        boolean esElMeseroQueLoTomo = pedido.getMeseros().stream()
+            .anyMatch(m -> usuarioSolicitante.equals(m.getUsuario()));
+        if (!esElMeseroQueLoTomo)
+            throw new Exception("No podés modificar un pedido que no tomaste vos.");
     }
 
     private void cargarClientesYAlimentos(Pedido pedido, List<Long> clienteIds, List<Long> alimentoIds) throws Exception {
