@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos — MenuJPA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+
+<div class="topbar">
+    <div class="topbar-logo"><div class="topbar-logo-mark">MJ</div>MenuJPA</div>
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menú"><i class="bi bi-list"></i></button>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<nav class="nav-sidebar">
+    <a href="/" class="nav-logo">
+        <div class="nav-logo-mark">MJ</div>
+        <div class="nav-logo-text">MenuJPA <span>Gestión gastronómica</span></div>
+    </a>
+    <div class="nav-section">
+        <span class="nav-section-label">Gestión</span>
+        <a href="/menus"        class="nav-link"><i class="bi bi-list-ul"></i><span>Menús</span></a>
+        <a href="/recetas"      class="nav-link"><i class="bi bi-card-list"></i><span>Recetas</span></a>
+        <a href="/alimentos"    class="nav-link"><i class="bi bi-basket"></i><span>Alimentos</span></a>
+        <a href="/ingredientes" class="nav-link" data-rol="GERENTE"><i class="bi bi-egg-fried"></i><span>Ingredientes</span></a>
+        <a href="/despensas"    class="nav-link" data-rol="GERENTE"><i class="bi bi-box-seam"></i><span>Despensas</span></a>
+    </div>
+    <div class="nav-section">
+        <span class="nav-section-label">Personal</span>
+        <a href="/chefs"    class="nav-link" data-rol="GERENTE"><i class="bi bi-person-badge"></i><span>Chefs</span></a>
+        <a href="/meseros"  class="nav-link" data-rol="GERENTE"><i class="bi bi-person-vcard"></i><span>Meseros</span></a>
+        <a href="/gerentes" class="nav-link" data-rol="GERENTE"><i class="bi bi-person-workspace"></i><span>Gerentes</span></a>
+        <a href="/pagos"    class="nav-link" data-rol="GERENTE"><i class="bi bi-cash-coin"></i><span>Pagos</span></a>
+    </div>
+    <div class="nav-section">
+        <span class="nav-section-label">Operaciones</span>
+        <a href="/clientes" class="nav-link" data-rol="GERENTE"><i class="bi bi-people"></i><span>Clientes</span></a>
+        <a href="/mesas"    class="nav-link" data-rol="GERENTE,MESERO"><i class="bi bi-grid-3x3-gap"></i><span>Mesas</span></a>
+        <a href="/pedidos"  class="nav-link active" data-rol="GERENTE,MESERO"><i class="bi bi-receipt"></i><span>Pedidos</span></a>
+        <a href="/reservas" class="nav-link" data-rol="GERENTE,MESERO,CLIENTE"><i class="bi bi-calendar-check"></i><span>Reservas</span></a>
+    </div>
+    <div class="nav-cuenta" id="navCuenta"></div>
+</nav>
+
+<main class="page-content">
+    <header class="page-header">
+        <div>
+            <h1 class="page-title">Pedidos</h1>
+            <p class="page-subtitle">Tomar, modificar, entregar y cancelar pedidos</p>
+        </div>
+        <button class="btn btn-primary" data-rol="MESERO" onclick="abrirModalTomar()"><i class="bi bi-plus"></i> Tomar Pedido</button>
+    </header>
+
+    <div class="table-wrapper">
+        <div class="table-header"><span class="table-title">Pedidos</span></div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr><th>#</th><th>Cliente(s)</th><th>Mesero</th><th>Alimentos</th><th>Total</th><th>Estado</th><th></th></tr>
+                </thead>
+                <tbody id="bodyPedidos">
+                    <tr><td colspan="7" style="padding:0"><div class="empty-state"><div class="spinner"></div></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Tomar/Modificar Pedido -->
+<div class="modal-overlay" id="modalPedidoOverlay">
+    <div class="modal modal-xl">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitulo">Tomar Pedido</h3>
+            <button class="modal-close" onclick="modalHide('modalPedidoOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="pedidoId">
+            <div class="form-grid">
+                <div class="form-group col-full">
+                    <label class="form-label">Clientes <span class="required">*</span></label>
+                    <div class="inner-table-wrapper" style="max-height:180px; overflow-y:auto">
+                        <div id="listaClientesCheckbox" style="padding: var(--space-3) var(--space-4)"></div>
+                    </div>
+                </div>
+                <div class="form-group col-full">
+                    <label class="form-label">Alimentos y cantidades <span class="required">*</span></label>
+                    <div class="inner-table-wrapper" style="max-height:260px; overflow-y:auto">
+                        <table class="inner-table">
+                            <thead><tr><th>Alimento</th><th>Precio</th><th style="width:110px">Cantidad</th></tr></thead>
+                            <tbody id="listaAlimentosCantidad"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <p style="margin-top: var(--space-4); font-size: var(--text-sm); color: var(--text-secondary)">
+                Total estimado: <strong id="totalEstimado" style="color: var(--text-primary)">$ 0</strong>
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalPedidoOverlay')">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarPedido()"><i class="bi bi-check-lg"></i> Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Cancelar -->
+<div class="modal-overlay" id="modalCancelarOverlay">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <h3 class="modal-title">Cancelar pedido</h3>
+            <button class="modal-close" onclick="modalHide('modalCancelarOverlay')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body"><p class="confirm-text">¿Cancelar este pedido? Se borra por completo.</p></div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="modalHide('modalCancelarOverlay')">Volver</button>
+            <button class="btn btn-danger" id="btnConfirmarCancelar"><i class="bi bi-x-circle"></i> Cancelar pedido</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/api.js}"></script>
+<script>
+const API = '/api/v1/pedidos';
+let todosClientes  = [];
+let todosAlimentos = [];
+let pedidoEnEdicion = null;
+
+async function cargarPedidos() {
+    const data = await cargarConEstado(() => apiFetch(API), 'bodyPedidos', 7, 'bi-receipt', 'No hay pedidos registrados');
+    if (!data || data.length === 0) return;
+
+    document.getElementById('bodyPedidos').innerHTML = data.map(p => {
+        const clientes = (p.clientes || []).map(c => escapeHtml(c.apellido + ', ' + c.nombre)).join(' · ') || '—';
+        const mesero   = (p.meseros  || []).map(m => escapeHtml(m.apellido + ', ' + m.nombre)).join(' · ') || '—';
+        const nAlim    = (p.alimentosAdquiridos || []).length;
+        const total    = p.precioTotalPedido != null ? '$ ' + Number(p.precioTotalPedido).toLocaleString('es-AR') : '—';
+        const entregado = p.estado === true;
+        const estadoBadge = entregado
+            ? '<span class="badge badge-entregado">Entregado</span>'
+            : '<span class="badge badge-pendiente">Pendiente</span>';
+        const acciones = entregado ? '' : `
+            <button class="btn btn-ghost btn-sm" onclick="abrirModalModificar(${p.id})" title="Modificar"><i class="bi bi-pencil"></i></button>
+            <button class="btn btn-success btn-sm" onclick="entregarPedido(${p.id})" title="Marcar entregado"><i class="bi bi-check2-circle"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="confirmarCancelar(${p.id})" title="Cancelar pedido"><i class="bi bi-x-circle"></i></button>`;
+        return `<tr>
+            <td><span class="badge badge-default">${p.id}</span></td>
+            <td>${clientes}</td>
+            <td>${mesero}</td>
+            <td>${nAlim}</td>
+            <td>${total}</td>
+            <td>${estadoBadge}</td>
+            <td><div class="td-actions">${acciones}</div></td>
+        </tr>`;
+    }).join('');
+}
+
+async function cargarDatosBase() {
+    todosClientes  = await apiFetch('/api/v1/clientes')  || [];
+    todosAlimentos = await apiFetch('/api/v1/alimentos') || [];
+}
+
+function renderFormularioPedido(clienteIdsSeleccionados, cantidadesPorAlimento) {
+    document.getElementById('listaClientesCheckbox').innerHTML = todosClientes.length
+        ? todosClientes.map(c => `
+            <label style="display:flex; align-items:center; gap: var(--space-2); padding: 4px 0; font-size: var(--text-sm)">
+                <input type="checkbox" class="chk-cliente" value="${c.id}" ${clienteIdsSeleccionados.includes(c.id) ? 'checked' : ''}>
+                ${escapeHtml(c.apellido)}, ${escapeHtml(c.nombre)}
+            </label>`).join('')
+        : '<p style="color:var(--text-muted); font-size:var(--text-sm)">No hay clientes registrados. Registrá uno en /registro.</p>';
+
+    document.getElementById('listaAlimentosCantidad').innerHTML = todosAlimentos.map(a => `
+        <tr>
+            <td>${escapeHtml(a.nombre)}</td>
+            <td>$ ${Number(a.precio || 0).toLocaleString('es-AR')}</td>
+            <td><input type="number" class="form-input qty-alimento" data-id="${a.id}" data-precio="${a.precio || 0}"
+                       min="0" step="1" value="${cantidadesPorAlimento[a.id] || 0}" oninput="recalcularTotal()" style="margin-bottom:0"></td>
+        </tr>`).join('');
+
+    recalcularTotal();
+}
+
+function recalcularTotal() {
+    let total = 0;
+    document.querySelectorAll('.qty-alimento').forEach(inp => {
+        total += (parseInt(inp.value) || 0) * parseFloat(inp.dataset.precio);
+    });
+    document.getElementById('totalEstimado').textContent = '$ ' + total.toLocaleString('es-AR');
+}
+
+async function abrirModalTomar() {
+    await cargarDatosBase();
+    pedidoEnEdicion = null;
+    document.getElementById('pedidoId').value = '';
+    document.getElementById('modalTitulo').textContent = 'Tomar Pedido';
+    renderFormularioPedido([], {});
+    modalShow('modalPedidoOverlay');
+}
+
+async function abrirModalModificar(id) {
+    await cargarDatosBase();
+    const p = await apiFetch(`${API}/${id}`);
+    if (!p) return;
+    pedidoEnEdicion = p;
+    document.getElementById('pedidoId').value = p.id;
+    document.getElementById('modalTitulo').textContent = 'Modificar Pedido #' + p.id;
+
+    const clienteIds = (p.clientes || []).map(c => c.id);
+    const cantidades = {};
+    (p.alimentosAdquiridos || []).forEach(a => { cantidades[a.id] = (cantidades[a.id] || 0) + 1; });
+
+    renderFormularioPedido(clienteIds, cantidades);
+    modalShow('modalPedidoOverlay');
+}
+
+function recolectarSeleccion() {
+    const clienteIds = Array.from(document.querySelectorAll('.chk-cliente:checked')).map(chk => parseInt(chk.value));
+    const alimentoIds = [];
+    document.querySelectorAll('.qty-alimento').forEach(inp => {
+        const cantidad = parseInt(inp.value) || 0;
+        for (let i = 0; i < cantidad; i++) alimentoIds.push(parseInt(inp.dataset.id));
+    });
+    return { clienteIds, alimentoIds };
+}
+
+async function guardarPedido() {
+    const { clienteIds, alimentoIds } = recolectarSeleccion();
+    if (!clienteIds.length) { mostrarAlerta('Seleccioná al menos un cliente.', 'warning'); return; }
+    if (!alimentoIds.length) { mostrarAlerta('Seleccioná al menos un alimento.', 'warning'); return; }
+
+    const id = document.getElementById('pedidoId').value;
+    const body = { clienteIds, alimentoIds };
+
+    const result = id
+        ? await apiFetch(`${API}/${id}/modificar`, 'PUT', body)
+        : await apiFetch(`${API}/tomar`, 'POST', body);
+
+    if (result) {
+        modalHide('modalPedidoOverlay');
+        mostrarAlerta(id ? 'Pedido actualizado.' : 'Pedido tomado.', 'success');
+        cargarPedidos();
+    }
+}
+
+async function entregarPedido(id) {
+    const result = await apiFetch(`${API}/${id}/entregar`, 'POST');
+    if (result) {
+        mostrarAlerta('Pedido marcado como entregado.', 'success');
+        cargarPedidos();
+    }
+}
+
+function confirmarCancelar(id) {
+    document.getElementById('btnConfirmarCancelar').onclick = async () => {
+        const ok = await apiFetch(`${API}/${id}/cancelar`, 'POST');
+        if (ok !== null) {
+            modalHide('modalCancelarOverlay');
+            mostrarAlerta('Pedido cancelado.', 'success');
+            cargarPedidos();
+        }
+    };
+    modalShow('modalCancelarOverlay');
+}
+
+cargarPedidos();
+</script>
+</body>
+</html>
