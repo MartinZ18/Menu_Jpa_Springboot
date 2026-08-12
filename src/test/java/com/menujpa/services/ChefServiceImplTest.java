@@ -130,4 +130,37 @@ class ChefServiceImplTest {
         assertThat(resultado).isTrue();
         verify(chefRepository).deleteById(4L);
     }
+
+    @Test
+    void registrarEntrada_conIdExistente_completaLaHoraDeIngreso() throws Exception {
+        Chef chef = new Chef();
+        chef.setId(5L);
+        when(baseRepository.findById(5L)).thenReturn(Optional.of(chef));
+        when(baseRepository.save(any(Chef.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Chef resultado = chefService.registrarEntrada(5L);
+
+        assertThat(resultado.getHoraIngreso()).matches("^([01]\\d|2[0-3]):[0-5]\\d$");
+    }
+
+    @Test
+    void registrarSalida_conIdExistente_completaLaHoraDeSalida() throws Exception {
+        Chef chef = new Chef();
+        chef.setId(5L);
+        when(baseRepository.findById(5L)).thenReturn(Optional.of(chef));
+        when(baseRepository.save(any(Chef.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Chef resultado = chefService.registrarSalida(5L);
+
+        assertThat(resultado.getHoraSalida()).matches("^([01]\\d|2[0-3]):[0-5]\\d$");
+    }
+
+    @Test
+    void registrarEntrada_conIdInexistente_lanzaExcepcion() {
+        when(baseRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> chefService.registrarEntrada(999L))
+            .isInstanceOf(Exception.class)
+            .hasMessageContaining("999");
+    }
 }

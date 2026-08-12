@@ -100,4 +100,25 @@ class MeseroServiceImplTest {
             .isInstanceOf(Exception.class)
             .hasMessageContaining("7");
     }
+
+    @Test
+    void registrarEntrada_conIdExistente_completaLaHoraDeIngreso() throws Exception {
+        Mesero mesero = new Mesero();
+        mesero.setId(8L);
+        when(baseRepository.findById(8L)).thenReturn(Optional.of(mesero));
+        when(baseRepository.save(any(Mesero.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Mesero resultado = meseroService.registrarEntrada(8L);
+
+        assertThat(resultado.getHoraIngreso()).matches("^([01]\\d|2[0-3]):[0-5]\\d$");
+    }
+
+    @Test
+    void registrarSalida_conIdInexistente_lanzaExcepcion() {
+        when(baseRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> meseroService.registrarSalida(999L))
+            .isInstanceOf(Exception.class)
+            .hasMessageContaining("999");
+    }
 }
