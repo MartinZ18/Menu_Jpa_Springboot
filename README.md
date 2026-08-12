@@ -40,11 +40,14 @@ Sistema web para la gestión gastronómica de un restaurante. Permite administra
 
 ### Personal
 - **Chefs** — Personal de cocina con especialidad, experiencia y horarios
+- **Meseros** — Personal de sala que toma y entrega los pedidos
 - **Gerentes** — Responsables de menús y despensa
 
 ### Operaciones
 - **Clientes** — Registro de clientes con usuario y contraseña
 - **Ingredientes** — Stock de ingredientes con descripción y cantidad
+- **Despensas** — Agrupan el stock de ingredientes, administradas por un gerente
+- **Pedidos** — Pedidos realizados por los clientes
 
 ---
 
@@ -65,6 +68,7 @@ Base
 └── Persona
     ├── Empleado (abstracto)
     │   ├── Chef
+    │   └── Mesero
     ├── Gerente
     └── Cliente
 
@@ -76,7 +80,9 @@ Base
 │   └── Adicional
 ├── Menu
 ├── Receta
-└── Ingrediente
+├── Ingrediente
+├── Despensa
+└── Pedido
 ```
 
 ---
@@ -130,9 +136,12 @@ La documentación interactiva de la API (Swagger UI) queda disponible en `http:/
 | Recetas | `/api/v1/recetas` |
 | Alimentos | `/api/v1/alimentos` |
 | Chefs | `/api/v1/chefs` |
+| Meseros | `/api/v1/meseros` |
 | Gerentes | `/api/v1/gerentes` |
 | Clientes | `/api/v1/clientes` |
 | Ingredientes | `/api/v1/ingredientes` |
+| Despensas | `/api/v1/despensas` |
+| Pedidos | `/api/v1/pedidos` |
 
 Todos los endpoints soportan: `GET /`, `GET /{id}`, `POST /`, `PUT /{id}`, `DELETE /{id}`.
 
@@ -144,13 +153,17 @@ POST   /api/v1/menus/{menuId}/recetas/{recetaId}   → agregar receta al menú
 
 DELETE /api/v1/menus/{menuId}/recetas/{recetaId}   → quitar receta del menú
 
+POST   /api/v1/despensas/{despensaId}/ingredientes/{ingredienteId}   → agregar ingrediente a la despensa
+
+DELETE /api/v1/despensas/{despensaId}/ingredientes/{ingredienteId}   → quitar ingrediente de la despensa
+
 
 
 ---
 
 ## Tests
 
-Cobertura unitaria de la capa de `services` (`MenuServiceImpl`, `RecetaServiceImpl`) con JUnit 5 + Mockito. Los repositorios se mockean, así que la suite no depende de una base de datos real ni de que la app esté corriendo.
+Cobertura unitaria de la capa de `services` con JUnit 5 + Mockito: CRUD genérico heredado de `BaseServiceImpl` y las reglas de negocio propias de cada servicio (validaciones de borrado, alta/baja en relaciones N a N). Los repositorios se mockean, así que la suite no depende de una base de datos real ni de que la app esté corriendo.
 
 ```bash
 # Correr toda la suite
