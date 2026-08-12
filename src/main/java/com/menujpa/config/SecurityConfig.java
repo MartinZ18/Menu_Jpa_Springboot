@@ -40,7 +40,7 @@ public class SecurityConfig {
 
     private static final String[] GESTION_STAFF = {
         "/api/v1/chefs/**", "/api/v1/meseros/**", "/api/v1/gerentes/**",
-        "/api/v1/despensas/**", "/api/v1/ingredientes/**"
+        "/api/v1/despensas/**", "/api/v1/ingredientes/**", "/api/v1/pagos/**"
     };
 
     private static final String[] ACCIONES_PEDIDO = {
@@ -62,6 +62,8 @@ public class SecurityConfig {
                     "/api/v1/auth/**"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/chefs/fichar/**").hasRole("CHEF")
+                .requestMatchers(HttpMethod.POST, "/api/v1/meseros/fichar/**").hasRole("MESERO")
                 .requestMatchers(HttpMethod.POST, GESTION_STAFF).hasRole("GERENTE")
                 .requestMatchers(HttpMethod.PUT, GESTION_STAFF).hasRole("GERENTE")
                 .requestMatchers(HttpMethod.DELETE, GESTION_STAFF).hasRole("GERENTE")
