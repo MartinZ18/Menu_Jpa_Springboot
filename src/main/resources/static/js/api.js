@@ -1,9 +1,45 @@
 // api.js — Utilidades REST + sistema de UI
 
+// ─── Escape HTML (nombre/apellido/usuario vienen de un registro publico sin
+// restriccion de caracteres, asi que nunca se interpolan crudos en innerHTML) ─
+function escapeHtml(valor) {
+    if (valor === null || valor === undefined) return '';
+    return String(valor)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// ─── Autenticación (JWT en localStorage) ────────────────────────────────────
+const Auth = {
+    getToken()   { return localStorage.getItem('mj_token'); },
+    getRol()     { return localStorage.getItem('mj_rol'); },
+    getUsuario() { return localStorage.getItem('mj_usuario'); },
+    isLoggedIn() { return !!this.getToken(); },
+    tieneRol(...roles) { return roles.includes(this.getRol()); },
+    guardarSesion(token, rol, usuario) {
+        localStorage.setItem('mj_token', token);
+        localStorage.setItem('mj_rol', rol);
+        localStorage.setItem('mj_usuario', usuario);
+    },
+    logout() {
+        localStorage.removeItem('mj_token');
+        localStorage.removeItem('mj_rol');
+        localStorage.removeItem('mj_usuario');
+        window.location.href = '/login';
+    }
+};
+
 // ─── API Fetch con manejo de errores robusto ────────────────────────────────
 async function apiFetch(url, method = 'GET', body = null) {
     try {
-        const options = { method, headers: { 'Content-Type': 'application/json' } };
+        const headers = { 'Content-Type': 'application/json' };
+        const token = Auth.getToken();
+        if (token) headers['Authorization'] = 'Bearer ' + token;
+
+        const options = { method, headers };
         if (body) options.body = JSON.stringify(body);
 
         const res = await fetch(url, options);
@@ -18,6 +54,12 @@ async function apiFetch(url, method = 'GET', body = null) {
         } else {
             const text = await res.text();
             data = { error: text || 'Error desconocido del servidor.' };
+        }
+
+        if (res.status === 401 && token) {
+            mostrarAlerta('Tu sesión venció. Iniciá sesión de nuevo.', 'error');
+            Auth.logout();
+            return null;
         }
 
         if (!res.ok) {
@@ -167,6 +209,14 @@ function modalHide(id) {
 
 function formatFecha(fecha) {
     if (!fecha) return '—';
+    // Fechas "solo fecha" (ej. "2026-12-31", sin hora) no llevan zona horaria: parsearlas con
+    // new Date() las interpreta como medianoche UTC y el navegador las corre un dia para atras
+    // en zonas horarias negativas (Argentina, etc). Se arman los componentes a mano en su lugar.
+    const soloFecha = /^\d{4}-\d{2}-\d{2}$/.test(fecha);
+    if (soloFecha) {
+        const [anio, mes, dia] = fecha.split('-').map(Number);
+        return new Date(anio, mes - 1, dia).toLocaleDateString('es-AR');
+    }
     return new Date(fecha).toLocaleDateString('es-AR');
 }
 
@@ -187,8 +237,39 @@ function dificultadBadge(d) {
     return `<span class="badge ${map[d] || 'badge-default'}">${d || '—'}</span>`;
 }
 
+// ─── Cuenta / visibilidad por rol ────────────────────────────────────────────
+const NOMBRES_ROL = { CLIENTE: 'Cliente', CHEF: 'Chef', MESERO: 'Mesero', GERENTE: 'Gerente' };
+
+function renderCuenta() {
+    const cont = document.getElementById('navCuenta');
+    if (!cont) return;
+    if (Auth.isLoggedIn()) {
+        cont.innerHTML = `
+            <div class="nav-cuenta-info">
+                <div class="nav-cuenta-usuario">${escapeHtml(Auth.getUsuario())}</div>
+                <div class="nav-cuenta-rol">${escapeHtml(NOMBRES_ROL[Auth.getRol()] || Auth.getRol())}</div>
+            </div>
+            <a href="#" class="nav-link" onclick="Auth.logout(); return false;">
+                <i class="bi bi-box-arrow-right"></i><span>Cerrar sesión</span>
+            </a>`;
+    } else {
+        cont.innerHTML = `
+            <a href="/login" class="nav-link"><i class="bi bi-box-arrow-in-right"></i><span>Iniciar sesión</span></a>
+            <a href="/registro" class="nav-link"><i class="bi bi-person-plus"></i><span>Registrarse</span></a>`;
+    }
+}
+
+function aplicarVisibilidadPorRol() {
+    document.querySelectorAll('[data-rol]').forEach(el => {
+        const roles = el.getAttribute('data-rol').split(',');
+        el.style.display = Auth.tieneRol(...roles) ? '' : 'none';
+    });
+}
+
 // ─── Event listeners globales ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    renderCuenta();
+    aplicarVisibilidadPorRol();
     // Cerrar modal al click fuera
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
         overlay.addEventListener('click', e => {

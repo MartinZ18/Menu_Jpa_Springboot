@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrarse — MenuJPA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <div class="nav-logo-mark" style="background: var(--accent)">MJ</div>
+        </div>
+        <h1 class="auth-title">Crear cuenta</h1>
+        <p class="auth-subtitle">Registrate como cliente</p>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">Nombre <span class="required">*</span></label>
+                <input type="text" class="form-input" id="nombre" maxlength="100">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Apellido <span class="required">*</span></label>
+                <input type="text" class="form-input" id="apellido" maxlength="100">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Correo</label>
+            <input type="email" class="form-input" id="correo" maxlength="100">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Usuario <span class="required">*</span></label>
+            <input type="text" class="form-input" id="usuario" autocomplete="username">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Contraseña <span class="required">*</span></label>
+            <input type="password" class="form-input" id="contrasenia" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+        </div>
+        <button class="btn btn-primary" style="width:100%; justify-content:center" onclick="registrarse()">
+            <i class="bi bi-person-plus"></i> Crear cuenta
+        </button>
+
+        <p class="auth-footer">¿Ya tenés cuenta? <a href="/login">Iniciar sesión</a></p>
+    </div>
+</div>
+
+<script th:src="@{/js/api.js}"></script>
+<script>
+async function registrarse() {
+    const nombre       = document.getElementById('nombre').value.trim();
+    const apellido     = document.getElementById('apellido').value.trim();
+    const correo       = document.getElementById('correo').value.trim();
+    const usuario      = document.getElementById('usuario').value.trim();
+    const contrasenia  = document.getElementById('contrasenia').value;
+
+    if (!Validar.requerido(nombre, 'Nombre')) return;
+    if (!Validar.requerido(apellido, 'Apellido')) return;
+    if (!Validar.email(correo)) return;
+    if (!Validar.requerido(usuario, 'Usuario')) return;
+    if (contrasenia.length < 6) { mostrarAlerta('La contraseña debe tener al menos 6 caracteres.', 'warning'); return; }
+
+    const result = await apiFetch('/api/v1/auth/registrarse', 'POST', {
+        nombre, apellido, correo: correo || null, usuario, contrasenia
+    });
+    if (result) {
+        Auth.guardarSesion(result.token, result.rol, usuario);
+        mostrarAlerta('¡Cuenta creada! Bienvenido/a.', 'success');
+        window.location.href = '/';
+    }
+}
+</script>
+</body>
+</html>

@@ -28,15 +28,27 @@
     </a>
     <div class="nav-section">
         <span class="nav-section-label">Gestión</span>
-        <a href="/menus"     class="nav-link"><i class="bi bi-list-ul"></i><span>Menús</span></a>
-        <a href="/recetas"   class="nav-link"><i class="bi bi-card-list"></i><span>Recetas</span></a>
-        <a href="/alimentos" class="nav-link"><i class="bi bi-basket"></i><span>Alimentos</span></a>
+        <a href="/menus"        class="nav-link"><i class="bi bi-list-ul"></i><span>Menús</span></a>
+        <a href="/recetas"      class="nav-link"><i class="bi bi-card-list"></i><span>Recetas</span></a>
+        <a href="/alimentos"    class="nav-link"><i class="bi bi-basket"></i><span>Alimentos</span></a>
+        <a href="/ingredientes" class="nav-link" data-rol="GERENTE"><i class="bi bi-egg-fried"></i><span>Ingredientes</span></a>
+        <a href="/despensas"    class="nav-link" data-rol="GERENTE"><i class="bi bi-box-seam"></i><span>Despensas</span></a>
     </div>
     <div class="nav-section">
         <span class="nav-section-label">Personal</span>
-        <a href="/chefs"    class="nav-link"><i class="bi bi-person-badge"></i><span>Chefs</span></a>
-        <a href="/gerentes" class="nav-link"><i class="bi bi-person-workspace"></i><span>Gerentes</span></a>
+        <a href="/chefs"    class="nav-link" data-rol="GERENTE"><i class="bi bi-person-badge"></i><span>Chefs</span></a>
+        <a href="/meseros"  class="nav-link" data-rol="GERENTE"><i class="bi bi-person-vcard"></i><span>Meseros</span></a>
+        <a href="/gerentes" class="nav-link" data-rol="GERENTE"><i class="bi bi-person-workspace"></i><span>Gerentes</span></a>
+        <a href="/pagos"    class="nav-link" data-rol="GERENTE"><i class="bi bi-cash-coin"></i><span>Pagos</span></a>
     </div>
+    <div class="nav-section">
+        <span class="nav-section-label">Operaciones</span>
+        <a href="/clientes" class="nav-link" data-rol="GERENTE"><i class="bi bi-people"></i><span>Clientes</span></a>
+        <a href="/mesas"    class="nav-link" data-rol="GERENTE,MESERO"><i class="bi bi-grid-3x3-gap"></i><span>Mesas</span></a>
+        <a href="/pedidos"  class="nav-link" data-rol="GERENTE,MESERO"><i class="bi bi-receipt"></i><span>Pedidos</span></a>
+        <a href="/reservas" class="nav-link" data-rol="GERENTE,MESERO,CLIENTE"><i class="bi bi-calendar-check"></i><span>Reservas</span></a>
+    </div>
+    <div class="nav-cuenta" id="navCuenta"></div>
 </nav>
 
 <main class="page-content">
@@ -99,6 +111,18 @@
                 <div class="module-card-title">Alimentos</div>
                 <div class="module-card-desc">Gestioná el catálogo: platos fuertes, bebidas, postres y adicionales.</div>
             </a>
+            <a href="/ingredientes" class="module-card" data-rol="GERENTE">
+                <i class="bi bi-arrow-right module-card-arrow"></i>
+                <div class="module-card-icon-wrap"><i class="bi bi-egg-fried"></i></div>
+                <div class="module-card-title">Ingredientes</div>
+                <div class="module-card-desc">Catálogo de ingredientes y su stock disponible.</div>
+            </a>
+            <a href="/despensas" class="module-card" data-rol="GERENTE">
+                <i class="bi bi-arrow-right module-card-arrow"></i>
+                <div class="module-card-icon-wrap"><i class="bi bi-box-seam"></i></div>
+                <div class="module-card-title">Despensas</div>
+                <div class="module-card-desc">Agrupan el stock de ingredientes, administradas por un gerente.</div>
+            </a>
         </div>
     </div>
 
@@ -108,18 +132,64 @@
             <span class="module-section-label">Personal</span>
             <div class="module-section-line"></div>
         </div>
-        <div class="module-grid module-grid-2">
+        <div class="module-grid module-grid-2" data-rol="GERENTE">
             <a href="/chefs" class="module-card">
                 <i class="bi bi-arrow-right module-card-arrow"></i>
                 <div class="module-card-icon-wrap"><i class="bi bi-person-badge"></i></div>
                 <div class="module-card-title">Chefs</div>
                 <div class="module-card-desc">Administrá el personal de cocina con su especialidad, experiencia y horarios.</div>
             </a>
+            <a href="/meseros" class="module-card">
+                <i class="bi bi-arrow-right module-card-arrow"></i>
+                <div class="module-card-icon-wrap"><i class="bi bi-person-vcard"></i></div>
+                <div class="module-card-title">Meseros</div>
+                <div class="module-card-desc">Personal de sala que toma y entrega los pedidos.</div>
+            </a>
             <a href="/gerentes" class="module-card">
                 <i class="bi bi-arrow-right module-card-arrow"></i>
                 <div class="module-card-icon-wrap"><i class="bi bi-person-workspace"></i></div>
                 <div class="module-card-title">Gerentes</div>
                 <div class="module-card-desc">Registrá los gerentes del restaurante que supervisan y aprueban los menús.</div>
+            </a>
+            <a href="/pagos" class="module-card">
+                <i class="bi bi-arrow-right module-card-arrow"></i>
+                <div class="module-card-icon-wrap"><i class="bi bi-cash-coin"></i></div>
+                <div class="module-card-title">Pagos</div>
+                <div class="module-card-desc">Generá el pago de nómina de Chefs y Meseros.</div>
+            </a>
+        </div>
+    </div>
+
+    <div class="module-section section-sistema">
+        <div class="module-section-header">
+            <div class="module-section-dot"></div>
+            <span class="module-section-label">Operaciones</span>
+            <div class="module-section-line"></div>
+        </div>
+        <div class="module-grid module-grid-3">
+            <a href="/clientes" class="module-card" data-rol="GERENTE">
+                <i class="bi bi-arrow-right module-card-arrow"></i>
+                <div class="module-card-icon-wrap"><i class="bi bi-people"></i></div>
+                <div class="module-card-title">Clientes</div>
+                <div class="module-card-desc">Registro de clientes del restaurante.</div>
+            </a>
+            <a href="/pedidos" class="module-card" data-rol="GERENTE,MESERO">
+                <i class="bi bi-arrow-right module-card-arrow"></i>
+                <div class="module-card-icon-wrap"><i class="bi bi-receipt"></i></div>
+                <div class="module-card-title">Pedidos</div>
+                <div class="module-card-desc">Tomá, modificá, entregá y cancelá pedidos con cálculo de precio automático.</div>
+            </a>
+            <a href="/reservas" class="module-card" data-rol="GERENTE,MESERO,CLIENTE">
+                <i class="bi bi-arrow-right module-card-arrow"></i>
+                <div class="module-card-icon-wrap"><i class="bi bi-calendar-check"></i></div>
+                <div class="module-card-title">Reservas</div>
+                <div class="module-card-desc">Reservá una mesa validando capacidad y disponibilidad de horario.</div>
+            </a>
+            <a href="/mesas" class="module-card" data-rol="GERENTE,MESERO">
+                <i class="bi bi-arrow-right module-card-arrow"></i>
+                <div class="module-card-icon-wrap"><i class="bi bi-grid-3x3-gap"></i></div>
+                <div class="module-card-title">Mesas</div>
+                <div class="module-card-desc">Mesas del salón: número y capacidad.</div>
             </a>
         </div>
     </div>

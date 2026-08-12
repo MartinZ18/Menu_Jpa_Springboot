@@ -43,9 +43,8 @@ public class SecurityConfig {
         "/api/v1/despensas/**", "/api/v1/ingredientes/**", "/api/v1/pagos/**", "/api/v1/mesas/**"
     };
 
-    private static final String[] ACCIONES_PEDIDO = {
-        "/api/v1/pedidos/tomar", "/api/v1/pedidos/*/modificar",
-        "/api/v1/pedidos/*/entregar", "/api/v1/pedidos/*/cancelar"
+    private static final String[] ACCIONES_PEDIDO_MESERO_O_GERENTE = {
+        "/api/v1/pedidos/*/modificar", "/api/v1/pedidos/*/entregar", "/api/v1/pedidos/*/cancelar"
     };
 
     @Bean
@@ -56,7 +55,12 @@ public class SecurityConfig {
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/", "/menus", "/recetas", "/alimentos", "/chefs", "/gerentes",
+                    // Paginas (Thymeleaf): la proteccion real esta en las llamadas a /api/v1/**
+                    // que cada pagina hace, no en el HTML en si -- si no, nadie podria ni cargar
+                    // /login para autenticarse.
+                    "/", "/login", "/registro", "/menus", "/recetas", "/alimentos",
+                    "/chefs", "/meseros", "/gerentes", "/clientes", "/ingredientes",
+                    "/despensas", "/mesas", "/pedidos", "/pagos", "/reservas",
                     "/css/**", "/js/**", "/webjars/**",
                     "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                     "/api/v1/auth/**"
@@ -69,7 +73,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, GESTION_STAFF).hasRole("GERENTE")
                 .requestMatchers(HttpMethod.PUT, GESTION_STAFF).hasRole("GERENTE")
                 .requestMatchers(HttpMethod.DELETE, GESTION_STAFF).hasRole("GERENTE")
-                .requestMatchers(ACCIONES_PEDIDO).hasAnyRole("MESERO", "GERENTE")
+                // Solo un mesero "toma" un pedido nuevo; el gerente supervisa los ya tomados
+                // (modificar/entregar/cancelar), pero no origina pedidos -- no tiene fila en Mesero.
+                .requestMatchers(HttpMethod.POST, "/api/v1/pedidos/tomar").hasRole("MESERO")
+                .requestMatchers(ACCIONES_PEDIDO_MESERO_O_GERENTE).hasAnyRole("MESERO", "GERENTE")
                 .requestMatchers(HttpMethod.POST, "/api/v1/reservas/reservar").hasRole("CLIENTE")
                 .anyRequest().authenticated())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
