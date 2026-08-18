@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuestro Menú — MenuJPA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%237D2E3F'/%3E%3Ctext x='32' y='43' font-family='Georgia, serif' font-weight='700' font-size='26' fill='white' text-anchor='middle'%3EMJ%3C/text%3E%3C/svg%3E">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body class="body-public">
+
+<div th:replace="~{fragments/shell-public :: navbar(activo='menu')}"></div>
+
+<main>
+    <section class="hero-public" style="padding-bottom: var(--space-10)">
+        <h1 class="hero-public-title">La carta: nuestro <em>menú</em></h1>
+        <p class="hero-public-desc">Platos fuertes, bebidas, postres y adicionales. La carta se actualiza según estación y disponibilidad.</p>
+    </section>
+
+    <section class="section-public" id="menuPublico">
+        <div class="empty-state"><div class="spinner"></div></div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/shell-public :: footer}"></div>
+
+<script th:src="@{/js/api.js}"></script>
+<script>
+const CATEGORIAS = [
+    { tipo: 'PlatoFuerte', titulo: 'Platos Fuertes' },
+    { tipo: 'Bebida',      titulo: 'Bebidas' },
+    { tipo: 'Postre',      titulo: 'Postres' },
+    { tipo: 'Adicional',   titulo: 'Adicionales' }
+];
+
+async function cargarMenu() {
+    const cont = document.getElementById('menuPublico');
+    try {
+        const res = await fetch('/api/v1/alimentos');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const alimentos = await res.json();
+
+        const secciones = CATEGORIAS
+            .map(cat => ({ ...cat, items: alimentos.filter(a => a.tipo === cat.tipo) }))
+            .filter(cat => cat.items.length > 0);
+
+        if (secciones.length === 0) {
+            cont.innerHTML = `<div class="empty-state">
+                <i class="bi bi-journal-text"></i>
+                <p>Estamos actualizando la carta. Volvé a pasar pronto.</p>
+            </div>`;
+            return;
+        }
+
+        cont.innerHTML = `<div class="menu-public">` + secciones.map(cat => `
+            <div class="menu-public-section">
+                <h2 class="menu-public-section-title">${cat.titulo}</h2>
+                <div class="menu-public-section-rule"></div>
+                ${cat.items.map(a => `
+                    <div class="menu-public-item">
+                        <span class="menu-public-item-name">${escapeHtml(a.nombre)}</span>
+                        <span class="menu-public-item-leader"></span>
+                        <span class="menu-public-item-price">${a.precio != null ? '$' + a.precio : '—'}</span>
+                    </div>`).join('')}
+            </div>`).join('') + `</div>`;
+    } catch {
+        cont.innerHTML = `<div class="empty-state estado-error">
+            <i class="bi bi-wifi-off"></i>
+            <p>No pudimos cargar el menú ahora mismo.</p>
+            <button class="btn btn-ghost btn-sm" onclick="location.reload()"><i class="bi bi-arrow-clockwise"></i> Reintentar</button>
+        </div>`;
+    }
+}
+cargarMenu();
+</script>
+</body>
+</html>

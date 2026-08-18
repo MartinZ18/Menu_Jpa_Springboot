@@ -3,221 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MenuJPA — Gestión Gastronómica</title>
+    <title>MenuJPA — Restaurante</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%237D2E3F'/%3E%3Ctext x='32' y='43' font-family='Georgia, serif' font-weight='700' font-size='26' fill='white' text-anchor='middle'%3EMJ%3C/text%3E%3C/svg%3E">
     <link th:href="@{/css/style.css}" rel="stylesheet">
 </head>
-<body>
+<body class="body-public">
 
-<div class="topbar">
-    <div class="topbar-logo">
-        <div class="topbar-logo-mark">MJ</div>
-        MenuJPA
-    </div>
-    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menú">
-        <i class="bi bi-list"></i>
-    </button>
-</div>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div th:replace="~{fragments/shell-public :: navbar(activo='inicio')}"></div>
 
-<nav class="nav-sidebar">
-    <a href="/" class="nav-logo">
-        <div class="nav-logo-mark">MJ</div>
-        <div class="nav-logo-text">MenuJPA <span>Gestión gastronómica</span></div>
-    </a>
-    <div class="nav-section">
-        <span class="nav-section-label">Gestión</span>
-        <a href="/menus"        class="nav-link"><i class="bi bi-list-ul"></i><span>Menús</span></a>
-        <a href="/recetas"      class="nav-link"><i class="bi bi-card-list"></i><span>Recetas</span></a>
-        <a href="/alimentos"    class="nav-link"><i class="bi bi-basket"></i><span>Alimentos</span></a>
-        <a href="/ingredientes" class="nav-link" data-rol="GERENTE"><i class="bi bi-egg-fried"></i><span>Ingredientes</span></a>
-        <a href="/despensas"    class="nav-link" data-rol="GERENTE"><i class="bi bi-box-seam"></i><span>Despensas</span></a>
-    </div>
-    <div class="nav-section">
-        <span class="nav-section-label">Personal</span>
-        <a href="/chefs"    class="nav-link" data-rol="GERENTE"><i class="bi bi-person-badge"></i><span>Chefs</span></a>
-        <a href="/meseros"  class="nav-link" data-rol="GERENTE"><i class="bi bi-person-vcard"></i><span>Meseros</span></a>
-        <a href="/gerentes" class="nav-link" data-rol="GERENTE"><i class="bi bi-person-workspace"></i><span>Gerentes</span></a>
-        <a href="/pagos"    class="nav-link" data-rol="GERENTE"><i class="bi bi-cash-coin"></i><span>Pagos</span></a>
-    </div>
-    <div class="nav-section">
-        <span class="nav-section-label">Operaciones</span>
-        <a href="/clientes" class="nav-link" data-rol="GERENTE"><i class="bi bi-people"></i><span>Clientes</span></a>
-        <a href="/mesas"    class="nav-link" data-rol="GERENTE,MESERO"><i class="bi bi-grid-3x3-gap"></i><span>Mesas</span></a>
-        <a href="/pedidos"  class="nav-link" data-rol="GERENTE,MESERO"><i class="bi bi-receipt"></i><span>Pedidos</span></a>
-        <a href="/reservas" class="nav-link" data-rol="GERENTE,MESERO,CLIENTE"><i class="bi bi-calendar-check"></i><span>Reservas</span></a>
-    </div>
-    <div class="nav-cuenta" id="navCuenta"></div>
-</nav>
+<main>
+    <section class="hero-public">
+        <h1 class="hero-public-title">Cocina de estación,<br>una mesa lista <em>cuando vos lo estés.</em></h1>
+        <p class="hero-public-desc">Ingredientes de estación, una carta que cambia con las semanas y un servicio pensado para que no tengas que pensar en nada.</p>
+        <div class="hero-public-actions">
+            <a href="/reservas" class="btn btn-primary"><i class="bi bi-calendar-check"></i> Reservar una mesa</a>
+            <a href="/menu" class="btn btn-ghost-dark"><i class="bi bi-journal-text"></i> Ver el menú</a>
+        </div>
+        <div class="rating-badge">
+            <span class="rating-badge-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i></span>
+            <span class="rating-badge-score">4.8</span>
+            <span class="rating-badge-text"><i class="bi bi-google"></i>320 reseñas en Google</span>
+        </div>
+    </section>
 
-<main class="page-content">
+    <section class="info-strip">
+        <div class="info-strip-inner">
+            <div class="info-strip-item">
+                <div class="info-strip-icon"><i class="bi bi-clock"></i></div>
+                <div>
+                    <div class="info-strip-label">Horarios</div>
+                    <div class="info-strip-value">Lun a Sáb · 12:00–23:00<br>Domingos · 12:00–17:00</div>
+                </div>
+            </div>
+            <div class="info-strip-item">
+                <div class="info-strip-icon"><i class="bi bi-geo-alt"></i></div>
+                <div>
+                    <div class="info-strip-label">Ubicación</div>
+                    <div class="info-strip-value">Av. Principal 1234<br>Ciudad, Argentina</div>
+                </div>
+            </div>
+            <div class="info-strip-item">
+                <div class="info-strip-icon"><i class="bi bi-telephone"></i></div>
+                <div>
+                    <div class="info-strip-label">Reservas</div>
+                    <div class="info-strip-value">+54 11 0000-0000<br>reservas@menujpa.com</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <div class="hero">
-        <p class="hero-eyebrow"><i class="bi bi-circle-fill" style="font-size:0.45rem"></i> Panel de control</p>
-        <h1 class="hero-title">Sistema de Gestión<br><span class="hero-accent">de Menú</span></h1>
-        <p class="hero-desc">Administrá el restaurante desde un solo lugar. Menús, recetas, alimentos y personal unificados.</p>
-        <div class="hero-actions">
-            <a href="/menus"   class="btn btn-primary"><i class="bi bi-list-ul"></i> Ver Menús</a>
-            <a href="/recetas" class="btn btn-ghost"><i class="bi bi-card-list"></i> Ver Recetas</a>
+    <section class="section-public">
+        <div class="section-public-header">
+            <h2 class="section-public-title">De la carta: algunos de nuestros platos</h2>
+            <p class="section-public-desc">Una selección de la carta actual. La lista completa, con bebidas y postres, está en el menú.</p>
         </div>
-    </div>
+        <div class="dish-grid" id="dishGrid">
+            <div class="empty-state"><div class="spinner"></div></div>
+        </div>
+        <div class="section-public-footer">
+            <a href="/menu" class="btn btn-ghost"><i class="bi bi-journal-text"></i> Ver el menú completo</a>
+        </div>
+    </section>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon"><i class="bi bi-list-ul"></i></div>
-            <div class="stat-label">Menús</div>
-            <div class="stat-value" id="statMenus">—</div>
+    <section class="section-public" style="padding-top:0">
+        <div class="section-public-header">
+            <h2 class="section-public-title">Sobre nosotros: buena mesa, sin vueltas</h2>
+            <p class="section-public-desc">
+                Trabajamos con productores de estación y una carta acotada que cambia seguido.
+                Si venís seguido vas a notar la diferencia; si es tu primera vez, cualquiera de
+                nuestro equipo te va a poder recomendar algo.
+            </p>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon"><i class="bi bi-card-list"></i></div>
-            <div class="stat-label">Recetas</div>
-            <div class="stat-value" id="statRecetas">—</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon"><i class="bi bi-person-badge"></i></div>
-            <div class="stat-label">Chefs</div>
-            <div class="stat-value" id="statChefs">—</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon"><i class="bi bi-basket"></i></div>
-            <div class="stat-label">Alimentos</div>
-            <div class="stat-value" id="statAlimentos">—</div>
-        </div>
-    </div>
-
-    <div class="module-section section-gestion">
-        <div class="module-section-header">
-            <div class="module-section-dot"></div>
-            <span class="module-section-label">Gestión</span>
-            <div class="module-section-line"></div>
-        </div>
-        <div class="module-grid module-grid-3">
-            <a href="/menus" class="module-card">
-                <i class="bi bi-arrow-right module-card-arrow"></i>
-                <div class="module-card-icon-wrap"><i class="bi bi-list-ul"></i></div>
-                <div class="module-card-title">Menús</div>
-                <div class="module-card-desc">Creá y gestioná los menús del restaurante. Asignales un gerente y agregá recetas.</div>
-            </a>
-            <a href="/recetas" class="module-card">
-                <i class="bi bi-arrow-right module-card-arrow"></i>
-                <div class="module-card-icon-wrap"><i class="bi bi-card-list"></i></div>
-                <div class="module-card-title">Recetas</div>
-                <div class="module-card-desc">Registrá recetas con descripción, dificultad, tiempo de preparación y alimentos.</div>
-            </a>
-            <a href="/alimentos" class="module-card">
-                <i class="bi bi-arrow-right module-card-arrow"></i>
-                <div class="module-card-icon-wrap"><i class="bi bi-basket"></i></div>
-                <div class="module-card-title">Alimentos</div>
-                <div class="module-card-desc">Gestioná el catálogo: platos fuertes, bebidas, postres y adicionales.</div>
-            </a>
-            <a href="/ingredientes" class="module-card" data-rol="GERENTE">
-                <i class="bi bi-arrow-right module-card-arrow"></i>
-                <div class="module-card-icon-wrap"><i class="bi bi-egg-fried"></i></div>
-                <div class="module-card-title">Ingredientes</div>
-                <div class="module-card-desc">Catálogo de ingredientes y su stock disponible.</div>
-            </a>
-            <a href="/despensas" class="module-card" data-rol="GERENTE">
-                <i class="bi bi-arrow-right module-card-arrow"></i>
-                <div class="module-card-icon-wrap"><i class="bi bi-box-seam"></i></div>
-                <div class="module-card-title">Despensas</div>
-                <div class="module-card-desc">Agrupan el stock de ingredientes, administradas por un gerente.</div>
-            </a>
-        </div>
-    </div>
-
-    <div class="module-section section-personal">
-        <div class="module-section-header">
-            <div class="module-section-dot"></div>
-            <span class="module-section-label">Personal</span>
-            <div class="module-section-line"></div>
-        </div>
-        <div class="module-grid module-grid-2" data-rol="GERENTE">
-            <a href="/chefs" class="module-card">
-                <i class="bi bi-arrow-right module-card-arrow"></i>
-                <div class="module-card-icon-wrap"><i class="bi bi-person-badge"></i></div>
-                <div class="module-card-title">Chefs</div>
-                <div class="module-card-desc">Administrá el personal de cocina con su especialidad, experiencia y horarios.</div>
-            </a>
-            <a href="/meseros" class="module-card">
-                <i class="bi bi-arrow-right module-card-arrow"></i>
-                <div class="module-card-icon-wrap"><i class="bi bi-person-vcard"></i></div>
-                <div class="module-card-title">Meseros</div>
-                <div class="module-card-desc">Personal de sala que toma y entrega los pedidos.</div>
-            </a>
-            <a href="/gerentes" class="module-card">
-                <i class="bi bi-arrow-right module-card-arrow"></i>
-                <div class="module-card-icon-wrap"><i class="bi bi-person-workspace"></i></div>
-                <div class="module-card-title">Gerentes</div>
-                <div class="module-card-desc">Registrá los gerentes del restaurante que supervisan y aprueban los menús.</div>
-            </a>
-            <a href="/pagos" class="module-card">
-                <i class="bi bi-arrow-right module-card-arrow"></i>
-                <div class="module-card-icon-wrap"><i class="bi bi-cash-coin"></i></div>
-                <div class="module-card-title">Pagos</div>
-                <div class="module-card-desc">Generá el pago de nómina de Chefs y Meseros.</div>
-            </a>
-        </div>
-    </div>
-
-    <div class="module-section section-sistema">
-        <div class="module-section-header">
-            <div class="module-section-dot"></div>
-            <span class="module-section-label">Operaciones</span>
-            <div class="module-section-line"></div>
-        </div>
-        <div class="module-grid module-grid-3">
-            <a href="/clientes" class="module-card" data-rol="GERENTE">
-                <i class="bi bi-arrow-right module-card-arrow"></i>
-                <div class="module-card-icon-wrap"><i class="bi bi-people"></i></div>
-                <div class="module-card-title">Clientes</div>
-                <div class="module-card-desc">Registro de clientes del restaurante.</div>
-            </a>
-            <a href="/pedidos" class="module-card" data-rol="GERENTE,MESERO">
-                <i class="bi bi-arrow-right module-card-arrow"></i>
-                <div class="module-card-icon-wrap"><i class="bi bi-receipt"></i></div>
-                <div class="module-card-title">Pedidos</div>
-                <div class="module-card-desc">Tomá, modificá, entregá y cancelá pedidos con cálculo de precio automático.</div>
-            </a>
-            <a href="/reservas" class="module-card" data-rol="GERENTE,MESERO,CLIENTE">
-                <i class="bi bi-arrow-right module-card-arrow"></i>
-                <div class="module-card-icon-wrap"><i class="bi bi-calendar-check"></i></div>
-                <div class="module-card-title">Reservas</div>
-                <div class="module-card-desc">Reservá una mesa validando capacidad y disponibilidad de horario.</div>
-            </a>
-            <a href="/mesas" class="module-card" data-rol="GERENTE,MESERO">
-                <i class="bi bi-arrow-right module-card-arrow"></i>
-                <div class="module-card-icon-wrap"><i class="bi bi-grid-3x3-gap"></i></div>
-                <div class="module-card-title">Mesas</div>
-                <div class="module-card-desc">Mesas del salón: número y capacidad.</div>
-            </a>
-        </div>
-    </div>
-
+    </section>
 </main>
+
+<div th:replace="~{fragments/shell-public :: footer}"></div>
 
 <script th:src="@{/js/api.js}"></script>
 <script>
-async function cargarStats() {
-    const endpoints = [
-        { url: '/api/v1/menus',     id: 'statMenus' },
-        { url: '/api/v1/recetas',   id: 'statRecetas' },
-        { url: '/api/v1/chefs',     id: 'statChefs' },
-        { url: '/api/v1/alimentos', id: 'statAlimentos' }
-    ];
-    for (const { url, id } of endpoints) {
-        try {
-            const headers = Auth.getToken() ? { 'Authorization': 'Bearer ' + Auth.getToken() } : {};
-            const res  = await fetch(url, { headers });
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            const data = await res.json();
-            document.getElementById(id).textContent = Array.isArray(data) ? data.length : '?';
-        } catch {
-            document.getElementById(id).textContent = '—';
+async function cargarDestacados() {
+    const grid = document.getElementById('dishGrid');
+    try {
+        const res = await fetch('/api/v1/alimentos');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const alimentos = await res.json();
+        const platos = alimentos.filter(a => a.tipo === 'PlatoFuerte').slice(0, 3);
+        if (platos.length === 0) {
+            grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+                <i class="bi bi-basket"></i>
+                <p>Estamos actualizando la carta. Volvé a pasar pronto.</p>
+            </div>`;
+            return;
         }
+        grid.innerHTML = platos.map(a => `
+            <div class="dish-card">
+                <div class="dish-card-top">
+                    <span class="dish-card-name">${escapeHtml(a.nombre)}</span>
+                    <span class="dish-card-price">${a.precio != null ? '$' + a.precio : ''}</span>
+                </div>
+                ${tipoBadge(a.tipo)}
+            </div>`).join('');
+    } catch {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+            <i class="bi bi-wifi-off"></i>
+            <p>No pudimos cargar la carta ahora mismo.</p>
+        </div>`;
     }
 }
-cargarStats();
+cargarDestacados();
 </script>
 </body>
 </html>

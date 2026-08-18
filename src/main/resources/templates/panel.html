@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel — MenuJPA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%237D2E3F'/%3E%3Ctext x='32' y='43' font-family='Georgia, serif' font-weight='700' font-size='26' fill='white' text-anchor='middle'%3EMJ%3C/text%3E%3C/svg%3E">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+
+<div th:replace="~{fragments/shell-app :: shell(activo='panel')}"></div>
+
+<main class="page-content">
+
+    <div class="hero">
+        <h1 class="hero-title">Buen turno<br><span class="hero-accent">— vamos a trabajar.</span></h1>
+        <p class="hero-desc">Gestioná menús, recetas, personal y operaciones del restaurante desde un solo lugar.</p>
+        <div class="hero-actions">
+            <a href="/pedidos" class="btn btn-primary" data-rol="GERENTE,MESERO"><i class="bi bi-receipt"></i> Ver pedidos</a>
+            <a href="/reservas" class="btn btn-ghost"><i class="bi bi-calendar-check"></i> Ver reservas</a>
+        </div>
+    </div>
+
+    <div class="module-section section-gestion" data-rol="GERENTE,CHEF">
+        <div class="module-section-header">
+            <div class="module-section-dot"></div>
+            <span class="module-section-label">Gestión</span>
+            <div class="module-section-line"></div>
+        </div>
+        <div class="nav-directory">
+            <a href="/menus" class="nav-directory-row">
+                <span class="nav-directory-icon"><i class="bi bi-list-ul"></i></span>
+                <span class="nav-directory-text">
+                    <span class="nav-directory-title">Menús</span>
+                    <span class="nav-directory-desc">Creá y gestioná los menús del restaurante. Asignales un gerente y agregá recetas.</span>
+                </span>
+                <span class="nav-directory-count" id="statMenus">—</span>
+                <i class="bi bi-chevron-right nav-directory-arrow"></i>
+            </a>
+            <a href="/recetas" class="nav-directory-row">
+                <span class="nav-directory-icon"><i class="bi bi-card-list"></i></span>
+                <span class="nav-directory-text">
+                    <span class="nav-directory-title">Recetas</span>
+                    <span class="nav-directory-desc">Registrá recetas con descripción, dificultad, tiempo de preparación y alimentos.</span>
+                </span>
+                <span class="nav-directory-count" id="statRecetas">—</span>
+                <i class="bi bi-chevron-right nav-directory-arrow"></i>
+            </a>
+            <a href="/alimentos" class="nav-directory-row">
+                <span class="nav-directory-icon"><i class="bi bi-basket"></i></span>
+                <span class="nav-directory-text">
+                    <span class="nav-directory-title">Alimentos</span>
+                    <span class="nav-directory-desc">Gestioná el catálogo: platos fuertes, bebidas, postres y adicionales.</span>
+                </span>
+                <span class="nav-directory-count" id="statAlimentos">—</span>
+                <i class="bi bi-chevron-right nav-directory-arrow"></i>
+            </a>
+            <a href="/ingredientes" class="nav-directory-row" data-rol="GERENTE">
+                <span class="nav-directory-icon"><i class="bi bi-egg-fried"></i></span>
+                <span class="nav-directory-text">
+                    <span class="nav-directory-title">Ingredientes</span>
+                    <span class="nav-directory-desc">Catálogo de ingredientes y su stock disponible.</span>
+                </span>
+                <i class="bi bi-chevron-right nav-directory-arrow"></i>
+            </a>
+            <a href="/despensas" class="nav-directory-row" data-rol="GERENTE">
+                <span class="nav-directory-icon"><i class="bi bi-box-seam"></i></span>
+                <span class="nav-directory-text">
+                    <span class="nav-directory-title">Despensas</span>
+                    <span class="nav-directory-desc">Agrupan el stock de ingredientes, administradas por un gerente.</span>
+                </span>
+                <i class="bi bi-chevron-right nav-directory-arrow"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="module-section section-personal" data-rol="GERENTE">
+        <div class="module-section-header">
+            <div class="module-section-dot"></div>
+            <span class="module-section-label">Personal</span>
+            <div class="module-section-line"></div>
+        </div>
+        <div class="nav-directory">
+            <a href="/chefs" class="nav-directory-row">
+                <span class="nav-directory-icon"><i class="bi bi-person-badge"></i></span>
+                <span class="nav-directory-text">
+                    <span class="nav-directory-title">Chefs</span>
+                    <span class="nav-directory-desc">Administrá el personal de cocina con su especialidad, experiencia y horarios.</span>
+                </span>
+                <span class="nav-directory-count" id="statChefs">—</span>
+                <i class="bi bi-chevron-right nav-directory-arrow"></i>
+            </a>
+            <a href="/meseros" class="nav-directory-row">
+                <span class="nav-directory-icon"><i class="bi bi-person-vcard"></i></span>
+                <span class="nav-directory-text">
+                    <span class="nav-directory-title">Meseros</span>
+                    <span class="nav-directory-desc">Personal de sala que toma y entrega los pedidos.</span>
+                </span>
+                <i class="bi bi-chevron-right nav-directory-arrow"></i>
+            </a>
+            <a href="/gerentes" class="nav-directory-row">
+                <span class="nav-directory-icon"><i class="bi bi-person-workspace"></i></span>
+                <span class="nav-directory-text">
+                    <span class="nav-directory-title">Gerentes</span>
+                    <span class="nav-directory-desc">Registrá los gerentes del restaurante que supervisan y aprueban los menús.</span>
+                </span>
+                <i class="bi bi-chevron-right nav-directory-arrow"></i>
+            </a>
+            <a href="/pagos" class="nav-directory-row">
+                <span class="nav-directory-icon"><i class="bi bi-cash-coin"></i></span>
+                <span class="nav-directory-text">
+                    <span class="nav-directory-title">Pagos</span>
+                    <span class="nav-directory-desc">Generá el pago de nómina de Chefs y Meseros.</span>
+                </span>
+                <i class="bi bi-chevron-right nav-directory-arrow"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="module-section section-sistema">
+        <div class="module-section-header">
+            <div class="module-section-dot"></div>
+            <span class="module-section-label">Operaciones</span>
+            <div class="module-section-line"></div>
+        </div>
+        <div class="nav-directory">
+            <a href="/clientes" class="nav-directory-row" data-rol="GERENTE,MESERO">
+                <span class="nav-directory-icon"><i class="bi bi-people"></i></span>
+                <span class="nav-directory-text">
+                    <span class="nav-directory-title">Clientes</span>
+                    <span class="nav-directory-desc">Registro de clientes del restaurante.</span>
+                </span>
+                <i class="bi bi-chevron-right nav-directory-arrow"></i>
+            </a>
+            <a href="/pedidos" class="nav-directory-row" data-rol="GERENTE,MESERO">
+                <span class="nav-directory-icon"><i class="bi bi-receipt"></i></span>
+                <span class="nav-directory-text">
+                    <span class="nav-directory-title">Pedidos</span>
+                    <span class="nav-directory-desc">Tomá, modificá, entregá y cancelá pedidos con cálculo de precio automático.</span>
+                </span>
+                <i class="bi bi-chevron-right nav-directory-arrow"></i>
+            </a>
+            <a href="/reservas" class="nav-directory-row">
+                <span class="nav-directory-icon"><i class="bi bi-calendar-check"></i></span>
+                <span class="nav-directory-text">
+                    <span class="nav-directory-title">Reservas</span>
+                    <span class="nav-directory-desc">Todas las reservas de mesa de los clientes.</span>
+                </span>
+                <i class="bi bi-chevron-right nav-directory-arrow"></i>
+            </a>
+            <a href="/mesas" class="nav-directory-row" data-rol="GERENTE,MESERO">
+                <span class="nav-directory-icon"><i class="bi bi-grid-3x3-gap"></i></span>
+                <span class="nav-directory-text">
+                    <span class="nav-directory-title">Mesas</span>
+                    <span class="nav-directory-desc">Mesas del salón: número y capacidad.</span>
+                </span>
+                <i class="bi bi-chevron-right nav-directory-arrow"></i>
+            </a>
+        </div>
+    </div>
+
+</main>
+
+<script th:src="@{/js/api.js}"></script>
+<script>
+Auth.requireRoles('GERENTE', 'CHEF', 'MESERO');
+
+async function cargarStats() {
+    const endpoints = [
+        { url: '/api/v1/menus',     id: 'statMenus' },
+        { url: '/api/v1/recetas',   id: 'statRecetas' },
+        { url: '/api/v1/chefs',     id: 'statChefs' },
+        { url: '/api/v1/alimentos', id: 'statAlimentos' }
+    ];
+    for (const { url, id } of endpoints) {
+        try {
+            const headers = Auth.getToken() ? { 'Authorization': 'Bearer ' + Auth.getToken() } : {};
+            const res  = await fetch(url, { headers });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            document.getElementById(id).textContent = Array.isArray(data) ? data.length : '?';
+        } catch {
+            document.getElementById(id).textContent = '—';
+        }
+    }
+}
+cargarStats();
+</script>
+</body>
+</html>
