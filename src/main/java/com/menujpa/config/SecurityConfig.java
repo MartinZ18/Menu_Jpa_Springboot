@@ -2,6 +2,7 @@ package com.menujpa.config;
 
 import com.menujpa.security.JwtAuthenticationFilter;
 import com.menujpa.security.RateLimitFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,7 +13,9 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -39,6 +42,32 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    // Sin esto, Spring Security usa Http403ForbiddenEntryPoint por defecto para TODO fallo de
+    // autorizacion -- incluido "no autenticado" (sin token / token invalido o expirado), que
+    // deberia ser 401. El frontend (api.js) distingue 401 (sesion vencida -> logout automatico)
+    // de 403 (accion sin permiso -> mensaje generico); sin este bean ambos casos llegaban como
+    // 403 y el logout automatico nunca se disparaba.
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return (request, response, authException) -> {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            // HttpServletResponse usa ISO-8859-1 por defecto si no se fija explicitamente: al
+            // escribir con getWriter() (sin pasar por el HttpMessageConverter de Jackson, que si
+            // usa UTF-8 por default) los acentos del mensaje quedaban corruptos.
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"error\":\"No autenticado. Iniciá sesión de nuevo.\"}");
+        };
+    }
+
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        return (request, response, accessDeniedException) -> {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"error\":\"No tenés permiso para esta acción.\"}");
+        };
     }
 
     private static final String[] GESTION_STAFF = {
@@ -70,12 +99,15 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(handling -> handling
+                .authenticationEntryPoint(authenticationEntryPoint())
+                .accessDeniedHandler(accessDeniedHandler()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     // Paginas (Thymeleaf): la proteccion real esta en las llamadas a /api/v1/**
                     // que cada pagina hace, no en el HTML en si -- si no, nadie podria ni cargar
                     // /login para autenticarse.
-                    "/", "/login", "/registro", "/menus", "/recetas", "/alimentos",
+                    "/", "/panel", "/menu", "/login", "/registro", "/menus", "/recetas", "/alimentos",
                     "/chefs", "/meseros", "/gerentes", "/clientes", "/ingredientes",
                     "/despensas", "/mesas", "/pedidos", "/pagos", "/reservas",
                     "/css/**", "/js/**", "/webjars/**",

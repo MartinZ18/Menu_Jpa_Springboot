@@ -15,8 +15,9 @@ import java.util.List;
 public class Pedido extends Base {
 
     // Relación con Cliente: "Manipula" en el diagrama, cliente : Cliente (composición)
-    // @BatchSize: al listar varios Pedido, Hibernate trae estas colecciones LAZY con un IN (...)
-    // por lote de 20 pedidos en vez de una query por fila (N+1) al recorrerlas.
+    // GET /pedidos ya no depende de esto: PedidoServiceImpl.findAll() trae clientes/meseros
+    // con JOIN FETCH en dos queries. @BatchSize queda como fallback (lotes de 20 vía IN (...))
+    // para cualquier otro camino que recorra estas colecciones LAZY sin fetch join.
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "pedido_cliente",

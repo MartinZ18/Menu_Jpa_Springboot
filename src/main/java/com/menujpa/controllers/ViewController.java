@@ -9,6 +9,12 @@ public class ViewController {
     @GetMapping("/")
     public String index() { return "index"; }
 
+    @GetMapping("/panel")
+    public String panel() { return "panel"; }
+
+    @GetMapping("/menu")
+    public String menu() { return "menu"; }
+
     @GetMapping("/login")
     public String login() { return "login"; }
 

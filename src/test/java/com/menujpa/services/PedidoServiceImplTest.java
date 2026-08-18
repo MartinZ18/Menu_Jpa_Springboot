@@ -8,6 +8,7 @@ import com.menujpa.repositories.AlimentoRepository;
 import com.menujpa.repositories.BaseRepository;
 import com.menujpa.repositories.ClienteRepository;
 import com.menujpa.repositories.MeseroRepository;
+import com.menujpa.repositories.PedidoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +38,9 @@ class PedidoServiceImplTest {
     @Mock
     private AlimentoRepository alimentoRepository;
 
+    @Mock
+    private PedidoRepository pedidoRepository;
+
     private PedidoServiceImpl pedidoService;
 
     @BeforeEach
@@ -45,15 +49,18 @@ class PedidoServiceImplTest {
         ReflectionTestUtils.setField(pedidoService, "meseroRepository", meseroRepository);
         ReflectionTestUtils.setField(pedidoService, "clienteRepository", clienteRepository);
         ReflectionTestUtils.setField(pedidoService, "alimentoRepository", alimentoRepository);
+        ReflectionTestUtils.setField(pedidoService, "pedidoRepository", pedidoRepository);
     }
 
     @Test
-    void findAll_devuelveTodosLosPedidos() throws Exception {
+    void findAll_devuelveTodosLosPedidosConClientesYMeserosCargados() throws Exception {
         Pedido pedido = new Pedido();
         pedido.setId(1L);
-        when(baseRepository.findAll()).thenReturn(List.of(pedido));
+        when(pedidoRepository.findAllFetchClientes()).thenReturn(List.of(pedido));
 
         assertThat(pedidoService.findAll()).containsExactly(pedido);
+        verify(pedidoRepository).findAllFetchMeseros();
+        verifyNoInteractions(baseRepository);
     }
 
     @Test

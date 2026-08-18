@@ -8,6 +8,7 @@ import com.menujpa.repositories.AlimentoRepository;
 import com.menujpa.repositories.BaseRepository;
 import com.menujpa.repositories.ClienteRepository;
 import com.menujpa.repositories.MeseroRepository;
+import com.menujpa.repositories.PedidoRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,8 +25,22 @@ public class PedidoServiceImpl extends BaseServiceImpl<Pedido, Long> implements 
     @Autowired private MeseroRepository meseroRepository;
     @Autowired private ClienteRepository clienteRepository;
     @Autowired private AlimentoRepository alimentoRepository;
+    @Autowired private PedidoRepository pedidoRepository;
 
     public PedidoServiceImpl(BaseRepository<Pedido, Long> baseRepository) { super(baseRepository); }
+
+    // Elimina el N+1 sobre clientes/meseros al listar: dos queries con JOIN FETCH en la misma
+    // transaccion en vez de dejar que Hibernate resuelva cada coleccion LAZY al recorrerla.
+    // La segunda query actualiza "meseros" sobre las mismas instancias que trajo la primera,
+    // porque ambas corren contra el mismo persistence context (misma transaccion).
+    @Override @Transactional
+    public List<Pedido> findAll() throws Exception {
+        try {
+            List<Pedido> pedidos = pedidoRepository.findAllFetchClientes();
+            pedidoRepository.findAllFetchMeseros();
+            return pedidos;
+        } catch (Exception e) { throw new Exception(e.getMessage()); }
+    }
 
     @Override @Transactional
     public Pedido tomarPedido(String meseroUsuario, List<Long> clienteIds, List<Long> alimentoIds) throws Exception {
