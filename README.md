@@ -28,7 +28,7 @@ Sistema web para la gestión gastronómica de un restaurante. Permite administra
 | Auth | Spring Security · JWT (jjwt) · BCrypt |
 | Documentación API | springdoc-openapi (Swagger UI) |
 | Frontend | Thymeleaf · Vanilla CSS · Vanilla JS |
-| Testing | JUnit 5 · Mockito |
+| Testing | JUnit 5 · Mockito · E2E con Testcontainers (MySQL 8) |
 | Build | Maven |
 
 ---
@@ -112,6 +112,7 @@ BaseServiceImpl<E, ID>
 - Java 17+
 - MySQL 8 corriendo en `localhost:3306`
 - Maven 3.8+
+- Docker (solo para correr los E2E)
 
 ---
 
@@ -197,12 +198,13 @@ Los tokens van en el header `Authorization: Bearer <token>`.
 | `POST /chefs/fichar/**` | fichaje propio | solo `CHEF` |
 | `POST /meseros/fichar/**` | fichaje propio | solo `MESERO` |
 | `POST` / `PUT` / `DELETE` | `/chefs`, `/meseros`, `/gerentes`, `/despensas`, `/ingredientes`, `/mesas`, `/pagos` | solo `GERENTE` |
-| `/pedidos/tomar`, `/modificar`, `/entregar`, `/cancelar` | ciclo de vida del pedido | `MESERO` o `GERENTE` |
+| `POST /pedidos/tomar` | tomar un pedido nuevo | solo `MESERO` |
+| `/pedidos/{id}/modificar`, `/entregar`, `/cancelar` | ciclo de vida del pedido | el `MESERO` que lo tomó, o cualquier `GERENTE` |
 | `POST /reservas/reservar` | reservar una mesa | solo `CLIENTE` |
 | `POST /reservas/{id}/cancelar` | cancelar una reserva | el `CLIENTE` dueño, o cualquier `GERENTE` |
 | `POST` / `PUT` / `DELETE` | el resto (`/menus`, `/recetas`, `/alimentos`, `/clientes`) | cualquier rol autenticado |
 
-> No hay alta pública de `Gerente`/`Chef`/`Mesero` — el primer gerente hay que sembrarlo a mano en la base (problema clásico de bootstrap de un rol admin). Los siguientes gerentes pueden crear personal vía `POST /api/v1/gerentes` una vez logueados.
+> No hay alta pública de `Gerente`/`Chef`/`Mesero` — el primer gerente hay que sembrarlo a mano en la base (problema clásico de bootstrap de un rol admin). Los siguientes gerentes pueden crear personal vía `POST /api/v1/gerentes` una vez logueados. La contraseña inicial (mínimo 8 caracteres) se fija en el alta y nunca se devuelve en ninguna respuesta.
 
 
 ## Endpoints adicionales
@@ -244,6 +246,23 @@ Cobertura unitaria de la capa de `services` con JUnit 5 + Mockito: CRUD genéric
 ./mvnw test -Dtest=MenuServiceImplTest
 ```
 
+### E2E
+
+Los `*IT.java` de `src/test/java/com/menujpa/e2e/` levantan la app completa en un puerto real, contra un MySQL 8 descartable en Docker (Testcontainers), y la recorren por HTTP como lo haría un cliente:
+
+- `PedidoFlujoIT`: el gerente da de alta meseros y alimentos, una clienta se registra, y el pedido pasa por 401 (sin token o con token adulterado), 403 (rol equivocado), el precio calculado desde la base, la guardia de propiedad entre meseros y la entrega única. Cada efecto se verifica también leyendo MySQL directo.
+- `RateLimitIT`: cinco logins fallidos y el sexto, con la contraseña correcta, recibe 429. El registro desde la misma IP también queda bloqueado.
+
+```bash
+# Unitarios + E2E (requiere Docker corriendo; sin Docker los E2E fallan, no se saltean)
+./mvnw verify
+
+# Un solo E2E
+./mvnw verify -Dtest=none -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=PedidoFlujoIT
+```
+
+Cada corrida deja la conversación HTTP completa (request, status y response de cada paso, con los JWT recortados) en `target/e2e-report/<Clase>-<test>.md`.
+
 ---
 
 ## Estructura del proyecto
@@ -275,7 +294,8 @@ menujpa-spring/
 │   └── test/java/com/menujpa/
 │       ├── SmokeTest.java
 │       ├── security/    PasswordHasherTest, JwtServiceTest
-│       └── services/    un *ServiceImplTest.java por servicio
+│       ├── services/    un *ServiceImplTest.java por servicio
+│       └── e2e/         PedidoFlujoIT, RateLimitIT (+ E2EBase, ClienteHttp)
 ├── docs/
 │   └── DiagramaMenu.jpeg
 ├── .env.example
