@@ -12,12 +12,15 @@ public abstract class PersonaServiceImpl<E extends Persona, ID extends Serializa
 
     @Override
     public E save(E entity) throws Exception {
+        if (entity.getContrasenia() == null || entity.getContrasenia().isBlank()) {
+            throw new Exception("La contraseña es obligatoria");
+        }
         entity.setContrasenia(PasswordHasher.hashIfNeeded(entity.getContrasenia()));
         return super.save(entity);
     }
 
-    // El update generico no puede tocar la contrasenia: el cliente nunca la recibe (@JsonIgnore),
-    // asi que si se la dejara pasar, un PUT normal la pisaria con null. Se preserva la existente
+    // El update generico no puede tocar la contrasenia: aunque ahora se puede enviar en el
+    // POST (WRITE_ONLY), un PUT normal no deberia poder cambiarla. Se preserva la existente
     // y el cambio de contrasenia se hace por un endpoint dedicado, no por acá.
     @Override
     public E update(ID id, E entity) throws Exception {

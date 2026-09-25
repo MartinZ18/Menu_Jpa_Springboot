@@ -55,6 +55,7 @@ class GerenteServiceImplTest {
     @Test
     void save_delegaEnElRepositorio() throws Exception {
         Gerente gerente = new Gerente();
+        gerente.setContrasenia("password123");
         when(baseRepository.save(gerente)).thenReturn(gerente);
 
         assertThat(gerenteService.save(gerente)).isEqualTo(gerente);

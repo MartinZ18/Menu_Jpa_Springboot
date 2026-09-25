@@ -60,6 +60,7 @@ class ChefServiceImplTest {
     @Test
     void save_delegaEnElRepositorio() throws Exception {
         Chef chef = new Chef();
+        chef.setContrasenia("password123");
         when(baseRepository.save(chef)).thenReturn(chef);
 
         assertThat(chefService.save(chef)).isEqualTo(chef);

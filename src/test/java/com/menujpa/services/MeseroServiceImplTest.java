@@ -56,6 +56,7 @@ class MeseroServiceImplTest {
     void save_delegaEnElRepositorio() throws Exception {
         Mesero mesero = new Mesero();
         mesero.setNombre("Juan");
+        mesero.setContrasenia("password123");
         when(baseRepository.save(mesero)).thenReturn(mesero);
 
         assertThat(meseroService.save(mesero)).isEqualTo(mesero);

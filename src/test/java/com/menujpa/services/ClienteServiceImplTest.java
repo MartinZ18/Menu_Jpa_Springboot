@@ -58,6 +58,7 @@ class ClienteServiceImplTest {
     void save_delegaEnElRepositorio() throws Exception {
         Cliente cliente = new Cliente();
         cliente.setUsuario("jperez");
+        cliente.setContrasenia("password123");
         when(baseRepository.save(cliente)).thenReturn(cliente);
 
         assertThat(clienteService.save(cliente)).isEqualTo(cliente);
@@ -99,8 +100,8 @@ class ClienteServiceImplTest {
         Cliente cambios = new Cliente();
         cambios.setId(1L);
         cambios.setNombre("Nombre actualizado");
-        // El cliente real nunca puede enviar la contrasenia (@JsonIgnore), pero probamos
-        // igual que aunque llegara algo distinto, el update la ignora por completo.
+        // La contrasenia se puede enviar en el JSON (WRITE_ONLY, para el alta), asi que un PUT
+        // podria traerla: el update la ignora por completo y preserva la existente.
         cambios.setContrasenia("lo-que-sea-que-llegue-se-ignora");
 
         when(baseRepository.findById(1L)).thenReturn(Optional.of(existente));

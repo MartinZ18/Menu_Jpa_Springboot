@@ -88,7 +88,11 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Usuario (login)</label>
-                    <input type="text" class="form-input" id="usuario" maxlength="100" placeholder="El gerente lo crea; la clave se define aparte">
+                    <input type="text" class="form-input" id="usuario" maxlength="100" placeholder="Usuario para iniciar sesión">
+                </div>
+                <div class="form-group" id="grupoContrasenia">
+                    <label class="form-label">Contraseña <span class="required">*</span></label>
+                    <input type="password" class="form-input" id="contrasenia" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
                 </div>
             </div>
         </div>
@@ -155,11 +159,12 @@ async function cargarMeseros() {
     `).join('');
 }
 
-const CAMPOS = ['meseroId','nombre','apellido','cedula','telefono','correo','salario','fechaVinculacion','usuario'];
+const CAMPOS = ['meseroId','nombre','apellido','cedula','telefono','correo','salario','fechaVinculacion','usuario','contrasenia'];
 function limpiarModal() { CAMPOS.forEach(id => { document.getElementById(id).value = ''; }); }
 
 function abrirModal() {
     limpiarModal();
+    document.getElementById('grupoContrasenia').style.display = '';
     document.getElementById('modalTitulo').textContent = 'Nuevo Mesero';
     modalShow('modalMeseroOverlay');
 }
@@ -177,22 +182,25 @@ async function editarMesero(id) {
     document.getElementById('salario').value            = m.salario || '';
     document.getElementById('fechaVinculacion').value   = m.fechaVinculacion ? m.fechaVinculacion.split('T')[0] : '';
     document.getElementById('usuario').value            = m.usuario || '';
+    document.getElementById('grupoContrasenia').style.display = 'none';
     document.getElementById('modalTitulo').textContent  = 'Editar Mesero';
     modalShow('modalMeseroOverlay');
 }
 
 async function guardarMesero() {
-    const nombre   = document.getElementById('nombre').value.trim();
-    const apellido = document.getElementById('apellido').value.trim();
-    const correo   = document.getElementById('correo').value.trim();
-    const salario  = document.getElementById('salario').value;
+    const nombre       = document.getElementById('nombre').value.trim();
+    const apellido     = document.getElementById('apellido').value.trim();
+    const correo       = document.getElementById('correo').value.trim();
+    const salario      = document.getElementById('salario').value;
+    const id           = document.getElementById('meseroId').value;
+    const contrasenia  = document.getElementById('contrasenia').value;
 
     if (!Validar.requerido(nombre,   'Nombre'))   return;
     if (!Validar.requerido(apellido, 'Apellido')) return;
     if (!Validar.email(correo))                   return;
     if (!Validar.numPositivo(salario, 'Salario')) return;
+    if (!id && contrasenia.length < 8) { mostrarAlerta('La contraseña debe tener al menos 8 caracteres.', 'warning'); return; }
 
-    const id   = document.getElementById('meseroId').value;
     const body = {
         nombre, apellido,
         cedula:           document.getElementById('cedula').value.trim() || null,
@@ -203,6 +211,7 @@ async function guardarMesero() {
         usuario:          document.getElementById('usuario').value.trim() || null
     };
     if (id) body.id = parseInt(id);
+    else body.contrasenia = contrasenia;
 
     const result = await apiFetch(id ? `${API}/${id}` : API, id ? 'PUT' : 'POST', body);
     if (result) {

@@ -83,6 +83,10 @@
                     <label class="form-label">Fecha de Nacimiento</label>
                     <input type="date" class="form-input" id="fechaNacimiento">
                 </div>
+                <div class="form-group" id="grupoContrasenia">
+                    <label class="form-label">Contraseña <span class="required">*</span></label>
+                    <input type="password" class="form-input" id="contrasenia" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+                </div>
             </div>
         </div>
         <div class="modal-footer">
@@ -150,9 +154,10 @@ async function cargarGerentes() {
 }
 
 function abrirModal() {
-    ['gerenteId','nombre','apellido','cedula','telefono','correo','fechaNacimiento'].forEach(id => {
+    ['gerenteId','nombre','apellido','cedula','telefono','correo','fechaNacimiento','contrasenia'].forEach(id => {
         document.getElementById(id).value = '';
     });
+    document.getElementById('grupoContrasenia').style.display = '';
     document.getElementById('modalTitulo').textContent = 'Nuevo Gerente';
     modalShow('modalGerenteOverlay');
 }
@@ -167,22 +172,25 @@ async function editarGerente(id) {
     document.getElementById('telefono').value        = g.telefono || '';
     document.getElementById('correo').value          = g.correo || '';
     document.getElementById('fechaNacimiento').value = g.fechaNacimiento ? g.fechaNacimiento.split('T')[0] : '';
+    document.getElementById('grupoContrasenia').style.display = 'none';
     document.getElementById('modalTitulo').textContent = 'Editar Gerente';
     modalShow('modalGerenteOverlay');
 }
 
 async function guardarGerente() {
-    const nombre   = document.getElementById('nombre').value.trim();
-    const apellido = document.getElementById('apellido').value.trim();
-    const correo   = document.getElementById('correo').value.trim();
-    const fechaNac = document.getElementById('fechaNacimiento').value;
+    const nombre       = document.getElementById('nombre').value.trim();
+    const apellido     = document.getElementById('apellido').value.trim();
+    const correo       = document.getElementById('correo').value.trim();
+    const fechaNac     = document.getElementById('fechaNacimiento').value;
+    const id           = document.getElementById('gerenteId').value;
+    const contrasenia  = document.getElementById('contrasenia').value;
 
     if (!Validar.requerido(nombre,   'Nombre'))   return;
     if (!Validar.requerido(apellido, 'Apellido')) return;
     if (!Validar.email(correo))                   return;
     if (!Validar.fechaPasada(fechaNac, 'Fecha de Nacimiento')) return;
+    if (!id && contrasenia.length < 8) { mostrarAlerta('La contraseña debe tener al menos 8 caracteres.', 'warning'); return; }
 
-    const id   = document.getElementById('gerenteId').value;
     const body = {
         nombre, apellido,
         cedula:          document.getElementById('cedula').value.trim() || null,
@@ -191,6 +199,7 @@ async function guardarGerente() {
         fechaNacimiento: fechaNac || null
     };
     if (id) body.id = parseInt(id);
+    else body.contrasenia = contrasenia;
 
     const result = await apiFetch(id ? `${API}/${id}` : API, id ? 'PUT' : 'POST', body);
     if (result) {

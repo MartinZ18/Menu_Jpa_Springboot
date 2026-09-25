@@ -111,6 +111,10 @@
                     <label class="form-label">Hora de Salida</label>
                     <input type="time" class="form-input" id="horaSalida">
                 </div>
+                <div class="form-group" id="grupoContrasenia">
+                    <label class="form-label">Contraseña <span class="required">*</span></label>
+                    <input type="password" class="form-input" id="contrasenia" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+                </div>
             </div>
         </div>
         <div class="modal-footer">
@@ -183,12 +187,13 @@ async function cargarChefs() {
 }
 
 const CAMPOS = ['chefId','nombre','apellido','cedula','telefono','correo','fechaNacimiento',
-                'especialidad','experiencia','salario','fechaVinculacion','horaIngreso','horaSalida'];
+                'especialidad','experiencia','salario','fechaVinculacion','horaIngreso','horaSalida','contrasenia'];
 
 function limpiarModal() { CAMPOS.forEach(id => { document.getElementById(id).value = ''; }); }
 
 function abrirModal() {
     limpiarModal();
+    document.getElementById('grupoContrasenia').style.display = '';
     document.getElementById('modalTitulo').textContent = 'Nuevo Chef';
     modalShow('modalChefOverlay');
 }
@@ -210,24 +215,27 @@ async function editarChef(id) {
     document.getElementById('fechaVinculacion').value  = c.fechaVinculacion ? c.fechaVinculacion.split('T')[0] : '';
     document.getElementById('horaIngreso').value       = c.horaIngreso || '';
     document.getElementById('horaSalida').value        = c.horaSalida || '';
+    document.getElementById('grupoContrasenia').style.display = 'none';
     document.getElementById('modalTitulo').textContent = 'Editar Chef';
     modalShow('modalChefOverlay');
 }
 
 async function guardarChef() {
-    const nombre   = document.getElementById('nombre').value.trim();
-    const apellido = document.getElementById('apellido').value.trim();
-    const correo   = document.getElementById('correo').value.trim();
-    const salario  = document.getElementById('salario').value;
-    const fechaNac = document.getElementById('fechaNacimiento').value;
+    const nombre       = document.getElementById('nombre').value.trim();
+    const apellido     = document.getElementById('apellido').value.trim();
+    const correo       = document.getElementById('correo').value.trim();
+    const salario      = document.getElementById('salario').value;
+    const fechaNac     = document.getElementById('fechaNacimiento').value;
+    const id           = document.getElementById('chefId').value;
+    const contrasenia  = document.getElementById('contrasenia').value;
 
     if (!Validar.requerido(nombre,   'Nombre'))   return;
     if (!Validar.requerido(apellido, 'Apellido')) return;
     if (!Validar.email(correo))                   return;
     if (!Validar.numPositivo(salario, 'Salario')) return;
     if (!Validar.fechaPasada(fechaNac, 'Fecha de Nacimiento')) return;
+    if (!id && contrasenia.length < 8) { mostrarAlerta('La contraseña debe tener al menos 8 caracteres.', 'warning'); return; }
 
-    const id   = document.getElementById('chefId').value;
     const body = {
         nombre, apellido,
         cedula:           document.getElementById('cedula').value.trim() || null,
@@ -242,6 +250,7 @@ async function guardarChef() {
         horaSalida:       document.getElementById('horaSalida').value || null
     };
     if (id) body.id = parseInt(id);
+    else body.contrasenia = contrasenia;
 
     const result = await apiFetch(id ? `${API}/${id}` : API, id ? 'PUT' : 'POST', body);
     if (result) {
