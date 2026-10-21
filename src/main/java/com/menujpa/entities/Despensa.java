@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor @AllArgsConstructor
 public class Despensa extends Base {
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "despensa_ingrediente",
         joinColumns = @JoinColumn(name = "idDespensa"),

@@ -32,7 +32,7 @@ public class Receta extends Base {
     @Column(name = "nombre_chef", length = 100)
     private String nombreChefTexto;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "receta_alimento",
         joinColumns = @JoinColumn(name = "idReceta"),

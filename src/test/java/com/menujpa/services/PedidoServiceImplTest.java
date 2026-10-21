@@ -18,6 +18,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -123,9 +124,8 @@ class PedidoServiceImplTest {
         bebida.setPrecio(500.0);
 
         when(meseroRepository.findByUsuario("mesero1")).thenReturn(Optional.of(mesero));
-        when(clienteRepository.findById(2L)).thenReturn(Optional.of(cliente));
-        when(alimentoRepository.findById(3L)).thenReturn(Optional.of(plato));
-        when(alimentoRepository.findById(4L)).thenReturn(Optional.of(bebida));
+        when(clienteRepository.findAllById(Set.of(2L))).thenReturn(List.of(cliente));
+        when(alimentoRepository.findAllById(Set.of(3L, 4L))).thenReturn(List.of(plato, bebida));
         when(baseRepository.save(any(Pedido.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Pedido resultado = pedidoService.tomarPedido("mesero1", List.of(2L), List.of(3L, 4L));
@@ -146,8 +146,8 @@ class PedidoServiceImplTest {
         bebida.setPrecio(500.0);
 
         when(meseroRepository.findByUsuario("mesero1")).thenReturn(Optional.of(mesero));
-        when(clienteRepository.findById(2L)).thenReturn(Optional.of(cliente));
-        when(alimentoRepository.findById(4L)).thenReturn(Optional.of(bebida));
+        when(clienteRepository.findAllById(Set.of(2L))).thenReturn(List.of(cliente));
+        when(alimentoRepository.findAllById(Set.of(4L))).thenReturn(List.of(bebida));
         when(baseRepository.save(any(Pedido.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Pedido resultado = pedidoService.tomarPedido("mesero1", List.of(2L), List.of(4L, 4L, 4L));
@@ -170,7 +170,7 @@ class PedidoServiceImplTest {
     @Test
     void tomarPedido_conClienteInexistente_lanzaExcepcion() {
         when(meseroRepository.findByUsuario("mesero1")).thenReturn(Optional.of(new Mesero()));
-        when(clienteRepository.findById(99L)).thenReturn(Optional.empty());
+        when(clienteRepository.findAllById(Set.of(99L))).thenReturn(List.of());
 
         assertThatThrownBy(() -> pedidoService.tomarPedido("mesero1", List.of(99L), List.of(1L)))
             .isInstanceOf(Exception.class)
@@ -191,8 +191,8 @@ class PedidoServiceImplTest {
         nuevoAlimento.setPrecio(900.0);
 
         when(baseRepository.findById(1L)).thenReturn(Optional.of(pedido));
-        when(clienteRepository.findById(2L)).thenReturn(Optional.of(cliente));
-        when(alimentoRepository.findById(5L)).thenReturn(Optional.of(nuevoAlimento));
+        when(clienteRepository.findAllById(Set.of(2L))).thenReturn(List.of(cliente));
+        when(alimentoRepository.findAllById(Set.of(5L))).thenReturn(List.of(nuevoAlimento));
         when(baseRepository.save(any(Pedido.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Pedido resultado = pedidoService.modificarPedido(1L, List.of(2L), List.of(5L), "gerente1", true);
@@ -229,8 +229,8 @@ class PedidoServiceImplTest {
         alimento.setPrecio(900.0);
 
         when(baseRepository.findById(1L)).thenReturn(Optional.of(pedido));
-        when(clienteRepository.findById(2L)).thenReturn(Optional.of(cliente));
-        when(alimentoRepository.findById(5L)).thenReturn(Optional.of(alimento));
+        when(clienteRepository.findAllById(Set.of(2L))).thenReturn(List.of(cliente));
+        when(alimentoRepository.findAllById(Set.of(5L))).thenReturn(List.of(alimento));
         when(baseRepository.save(any(Pedido.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Pedido resultado = pedidoService.modificarPedido(1L, List.of(2L), List.of(5L), "mesero1", false);

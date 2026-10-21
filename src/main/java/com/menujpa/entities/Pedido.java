@@ -38,7 +38,7 @@ public class Pedido extends Base {
     private List<Mesero> meseros = new ArrayList<>();
 
     // Relación con Alimento: alimentosAdquiridos — composición (diamante lleno en diagrama)
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "pedido_alimento",
         joinColumns = @JoinColumn(name = "idPedido"),

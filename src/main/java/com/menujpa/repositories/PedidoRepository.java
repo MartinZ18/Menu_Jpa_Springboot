@@ -17,4 +17,7 @@ public interface PedidoRepository extends BaseRepository<Pedido, Long> {
 
     @Query("SELECT DISTINCT p FROM Pedido p LEFT JOIN FETCH p.meseros")
     List<Pedido> findAllFetchMeseros();
+
+    @Query("SELECT DISTINCT p FROM Pedido p LEFT JOIN FETCH p.alimentosAdquiridos")
+    List<Pedido> findAllFetchAlimentos();
 }

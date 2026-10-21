@@ -17,7 +17,11 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class PedidoServiceImpl extends BaseServiceImpl<Pedido, Long> implements PedidoService {
@@ -29,15 +33,16 @@ public class PedidoServiceImpl extends BaseServiceImpl<Pedido, Long> implements 
 
     public PedidoServiceImpl(BaseRepository<Pedido, Long> baseRepository) { super(baseRepository); }
 
-    // Elimina el N+1 sobre clientes/meseros al listar: dos queries con JOIN FETCH en la misma
-    // transaccion en vez de dejar que Hibernate resuelva cada coleccion LAZY al recorrerla.
-    // La segunda query actualiza "meseros" sobre las mismas instancias que trajo la primera,
-    // porque ambas corren contra el mismo persistence context (misma transaccion).
+    // Elimina el N+1 sobre clientes/meseros/alimentos al listar: tres queries con JOIN FETCH en la
+    // misma transaccion en vez de dejar que Hibernate resuelva cada coleccion LAZY al recorrerla.
+    // Las queries 2 y 3 completan "meseros" y "alimentosAdquiridos" sobre las mismas instancias que
+    // trajo la primera, porque todas corren contra el mismo persistence context (misma transaccion).
     @Override @Transactional
     public List<Pedido> findAll() throws Exception {
         try {
             List<Pedido> pedidos = pedidoRepository.findAllFetchClientes();
             pedidoRepository.findAllFetchMeseros();
+            pedidoRepository.findAllFetchAlimentos();
             return pedidos;
         } catch (Exception e) { throw new Exception(e.getMessage()); }
     }
@@ -109,19 +114,27 @@ public class PedidoServiceImpl extends BaseServiceImpl<Pedido, Long> implements 
             throw new Exception("No podés modificar un pedido que no tomaste vos.");
     }
 
+    // Una sola query por tipo (WHERE id IN (...)) en vez de un findById por cada id. Se conserva el
+    // orden y las repeticiones de la lista original (un alimento pedido dos veces cuenta dos veces)
+    // y el primer id inexistente, en ese orden, es el que se informa.
     private void cargarClientesYAlimentos(Pedido pedido, List<Long> clienteIds, List<Long> alimentoIds) throws Exception {
+        Map<Long, Cliente> clientesPorId = clienteRepository.findAllById(new LinkedHashSet<>(clienteIds)).stream()
+            .collect(Collectors.toMap(Cliente::getId, Function.identity()));
         List<Cliente> clientes = new ArrayList<>();
         for (Long clienteId : clienteIds) {
-            clientes.add(clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new Exception("Cliente no encontrado con id: " + clienteId)));
+            Cliente cliente = clientesPorId.get(clienteId);
+            if (cliente == null) throw new Exception("Cliente no encontrado con id: " + clienteId);
+            clientes.add(cliente);
         }
         pedido.setClientes(clientes);
 
+        Map<Long, Alimento> alimentosPorId = alimentoRepository.findAllById(new LinkedHashSet<>(alimentoIds)).stream()
+            .collect(Collectors.toMap(Alimento::getId, Function.identity()));
         List<Alimento> alimentos = new ArrayList<>();
         double total = 0.0;
         for (Long alimentoId : alimentoIds) {
-            Alimento alimento = alimentoRepository.findById(alimentoId)
-                .orElseThrow(() -> new Exception("Alimento no encontrado con id: " + alimentoId));
+            Alimento alimento = alimentosPorId.get(alimentoId);
+            if (alimento == null) throw new Exception("Alimento no encontrado con id: " + alimentoId);
             alimentos.add(alimento);
             total += alimento.getPrecio() != null ? alimento.getPrecio() : 0.0;
         }
