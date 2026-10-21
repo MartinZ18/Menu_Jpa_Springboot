@@ -12,7 +12,7 @@ public interface PedidoRepository extends BaseRepository<Pedido, Long> {
     // Hibernate no permite JOIN FETCH de dos colecciones List a la vez (MultipleBagFetchException),
     // asi que se traen en dos queries separadas dentro de la misma transaccion/persistence context:
     // la segunda popula "meseros" sobre las mismas instancias de Pedido que ya trajo la primera.
-    @Query("SELECT DISTINCT p FROM Pedido p LEFT JOIN FETCH p.clientes")
+    @Query("SELECT DISTINCT p FROM Pedido p LEFT JOIN FETCH p.clientes ORDER BY p.id")
     List<Pedido> findAllFetchClientes();
 
     @Query("SELECT DISTINCT p FROM Pedido p LEFT JOIN FETCH p.meseros")
