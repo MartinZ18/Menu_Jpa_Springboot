@@ -40,6 +40,10 @@ final class ClienteHttp {
         return enviar("POST", ruta, token, cuerpo);
     }
 
+    Respuesta put(String ruta, String token, Object cuerpo) {
+        return enviar("PUT", ruta, token, cuerpo);
+    }
+
     void seccion(String titulo) {
         reporte.append("\n## ").append(titulo).append("\n");
     }

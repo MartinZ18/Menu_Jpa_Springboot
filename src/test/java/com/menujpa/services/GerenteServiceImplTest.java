@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import com.menujpa.security.MultiRoleUserDetailsService;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
@@ -31,6 +32,7 @@ class GerenteServiceImplTest {
     @BeforeEach
     void setUp() {
         gerenteService = new GerenteServiceImpl(baseRepository);
+        gerenteService.setUsuarios(mock(MultiRoleUserDetailsService.class));
         ReflectionTestUtils.setField(gerenteService, "menuRepository", menuRepository);
     }
 
