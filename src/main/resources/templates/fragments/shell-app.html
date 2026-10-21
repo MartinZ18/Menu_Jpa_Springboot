@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Shell del panel interno (topbar móvil + sidebar). Uso:
+     th:replace="~{fragments/shell-app :: shell(activo='alimentos')}"
+     El parámetro "activo" resalta el link correspondiente; el resto de la
+     visibilidad por rol la resuelve aplicarVisibilidadPorRol() en api.js
+     via data-rol, en runtime, con el rol guardado en localStorage. -->
+<div th:fragment="shell(activo)">
+
+    <div class="topbar">
+        <div class="topbar-logo">
+            <div class="topbar-logo-mark">MJ</div>
+            MenuJPA
+        </div>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menú">
+            <i class="bi bi-list"></i>
+        </button>
+    </div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <nav class="nav-sidebar">
+        <a href="/" class="nav-logo">
+            <div class="nav-logo-mark">MJ</div>
+            <div class="nav-logo-text">MenuJPA <span id="navLogoSub">Panel interno</span></div>
+        </a>
+
+        <div class="nav-section">
+            <a href="/panel" class="nav-link" data-rol="GERENTE,CHEF,MESERO" th:classappend="${activo == 'panel'} ? 'active'">
+                <i class="bi bi-speedometer2"></i><span>Panel</span>
+            </a>
+            <a href="/menu" class="nav-link">
+                <i class="bi bi-journal-text"></i><span>Nuestro Menú</span>
+            </a>
+        </div>
+
+        <div class="nav-section" data-rol="GERENTE,CHEF">
+            <span class="nav-section-label">Gestión</span>
+            <a href="/menus" class="nav-link" data-rol="GERENTE,CHEF" th:classappend="${activo == 'menus'} ? 'active'"><i class="bi bi-list-ul"></i><span>Menús</span></a>
+            <a href="/recetas" class="nav-link" data-rol="GERENTE,CHEF" th:classappend="${activo == 'recetas'} ? 'active'"><i class="bi bi-card-list"></i><span>Recetas</span></a>
+            <a href="/alimentos" class="nav-link" data-rol="GERENTE,CHEF" th:classappend="${activo == 'alimentos'} ? 'active'"><i class="bi bi-basket"></i><span>Alimentos</span></a>
+            <a href="/ingredientes" class="nav-link" data-rol="GERENTE" th:classappend="${activo == 'ingredientes'} ? 'active'"><i class="bi bi-egg-fried"></i><span>Ingredientes</span></a>
+            <a href="/despensas" class="nav-link" data-rol="GERENTE" th:classappend="${activo == 'despensas'} ? 'active'"><i class="bi bi-box-seam"></i><span>Despensas</span></a>
+        </div>
+
+        <div class="nav-section" data-rol="GERENTE">
+            <span class="nav-section-label">Personal</span>
+            <a href="/chefs" class="nav-link" data-rol="GERENTE" th:classappend="${activo == 'chefs'} ? 'active'"><i class="bi bi-person-badge"></i><span>Chefs</span></a>
+            <a href="/meseros" class="nav-link" data-rol="GERENTE" th:classappend="${activo == 'meseros'} ? 'active'"><i class="bi bi-person-vcard"></i><span>Meseros</span></a>
+            <a href="/gerentes" class="nav-link" data-rol="GERENTE" th:classappend="${activo == 'gerentes'} ? 'active'"><i class="bi bi-person-workspace"></i><span>Gerentes</span></a>
+            <a href="/pagos" class="nav-link" data-rol="GERENTE" th:classappend="${activo == 'pagos'} ? 'active'"><i class="bi bi-cash-coin"></i><span>Pagos</span></a>
+        </div>
+
+        <div class="nav-section" data-rol="GERENTE,MESERO,CLIENTE">
+            <span class="nav-section-label">Operaciones</span>
+            <a href="/clientes" class="nav-link" data-rol="GERENTE,MESERO" th:classappend="${activo == 'clientes'} ? 'active'"><i class="bi bi-people"></i><span>Clientes</span></a>
+            <a href="/mesas" class="nav-link" data-rol="GERENTE,MESERO" th:classappend="${activo == 'mesas'} ? 'active'"><i class="bi bi-grid-3x3-gap"></i><span>Mesas</span></a>
+            <a href="/pedidos" class="nav-link" data-rol="GERENTE,MESERO" th:classappend="${activo == 'pedidos'} ? 'active'"><i class="bi bi-receipt"></i><span>Pedidos</span></a>
+            <a href="/reservas" class="nav-link" data-rol="GERENTE,MESERO,CLIENTE" th:classappend="${activo == 'reservas'} ? 'active'"><i class="bi bi-calendar-check"></i><span>Reservas</span></a>
+        </div>
+
+        <div class="nav-cuenta" id="navCuenta"></div>
+    </nav>
+
+</div>
+
+</body>
+</html>

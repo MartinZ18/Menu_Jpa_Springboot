@@ -19,6 +19,8 @@
 
     <properties>
         <java.version>17</java.version>
+        <!-- La 1.19.x que trae Spring Boot 3.2.5 usa la API 1.32 de Docker, que Docker Engine 29+ rechaza -->
+        <testcontainers.version>1.21.4</testcontainers.version>
     </properties>
 
     <dependencies>
@@ -90,6 +92,13 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- E2E: MySQL real en Docker (Testcontainers) -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mysql</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -122,6 +131,19 @@
                         </exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+            <!-- Los E2E (*IT.java) corren con `./mvnw verify`, separados de los unitarios -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -7,11 +7,22 @@ import com.menujpa.repositories.RecetaRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.List;
 @Service
 public class MenuServiceImpl extends BaseServiceImpl<Menu, Long> implements MenuService {
     @Autowired private MenuRepository menuRepository;
     @Autowired private RecetaRepository recetaRepository;
     public MenuServiceImpl(BaseRepository<Menu, Long> baseRepository) { super(baseRepository); }
+    // Menus + gerente + recetas en una query y los alimentos de esas recetas en otra, ambas en la
+    // misma transaccion (mismo persistence context): 2 queries sin importar cuantos menus haya.
+    @Override @Transactional
+    public List<Menu> findAll() throws Exception {
+        try {
+            List<Menu> menus = baseRepository.findAll();
+            recetaRepository.findAllFetchAlimentosDeMenus();
+            return menus;
+        } catch (Exception e) { throw new Exception(e.getMessage()); }
+    }
     @Override @Transactional
     public Menu agregarReceta(Long menuId, Long recetaId) throws Exception {
         try {

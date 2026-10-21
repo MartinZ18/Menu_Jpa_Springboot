@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Navbar del sitio público. Uso: th:replace="~{fragments/shell-public :: navbar(activo='inicio')}" -->
+<header class="navbar-public" th:fragment="navbar(activo)">
+    <a href="/" class="navbar-public-logo">
+        <div class="navbar-public-logo-mark">MJ</div>
+        <div class="navbar-public-logo-text">MenuJPA</div>
+    </a>
+    <nav class="navbar-public-links">
+        <a href="/" class="navbar-public-link" th:classappend="${activo == 'inicio'} ? 'active'">Inicio</a>
+        <a href="/menu" class="navbar-public-link" th:classappend="${activo == 'menu'} ? 'active'">Menú</a>
+        <a href="/reservas" class="navbar-public-link" th:classappend="${activo == 'reservas'} ? 'active'">Reservas</a>
+    </nav>
+    <div class="navbar-public-actions" id="navbarPublicActions"></div>
+</header>
+
+<!-- Footer del sitio público. Uso: th:replace="~{fragments/shell-public :: footer}" -->
+<footer class="footer-public" th:fragment="footer">
+    <div class="footer-public-inner">
+        <div>
+            <div class="footer-public-brand">
+                <div class="navbar-public-logo-mark">MJ</div>
+                MenuJPA
+            </div>
+            <p class="footer-public-desc">Cocina de estación en un espacio pensado para quedarse. Reservá tu mesa o descubrí el menú completo.</p>
+        </div>
+        <div>
+            <div class="footer-public-heading">Horarios</div>
+            <p class="footer-public-line">Lun a Sáb · 12:00–23:00</p>
+            <p class="footer-public-line">Domingos · 12:00–17:00</p>
+        </div>
+        <div>
+            <div class="footer-public-heading">Ubicación</div>
+            <p class="footer-public-line">Av. Principal 1234</p>
+            <p class="footer-public-line">Ciudad, Argentina</p>
+        </div>
+    </div>
+    <div class="footer-public-bottom">
+        <span>© 2026 MenuJPA. Todos los derechos reservados.</span>
+        <span>Sitio de demostración — datos de contacto de ejemplo.</span>
+    </div>
+</footer>
+
+</body>
+</html>

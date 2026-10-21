@@ -12,11 +12,11 @@ import java.util.Date;
 @NoArgsConstructor @AllArgsConstructor
 public class Reserva extends Base {
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idCliente", nullable = false)
     private Cliente cliente;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idMesa", nullable = false)
     private Mesa mesa;
 

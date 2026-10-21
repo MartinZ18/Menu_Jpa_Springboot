@@ -29,6 +29,19 @@ const Auth = {
         localStorage.removeItem('mj_rol');
         localStorage.removeItem('mj_usuario');
         window.location.href = '/login';
+    },
+    // Guard de las páginas del panel interno: si no está logueado o su rol no
+    // está en la lista, lo manda al sitio público. Se llama como primera
+    // línea del <script> de cada página de gestión -- la proteccion real
+    // sigue viviendo en /api/v1/** (ver SecurityConfig), esto solo evita que
+    // un CLIENTE se quede parado viendo el shell de una pantalla de gestion
+    // si escribe la URL a mano.
+    requireRoles(...roles) {
+        if (!this.isLoggedIn() || !this.tieneRol(...roles)) {
+            window.location.href = '/';
+            return false;
+        }
+        return true;
     }
 };
 
@@ -262,11 +275,38 @@ function renderCuenta() {
     }
 }
 
+// Igual que renderCuenta() pero para la navbar del sitio público: horizontal,
+// compacta, y con un CTA directo al panel para el staff en vez del listado
+// completo de gestión (eso ya vive en el sidebar del panel interno).
+function renderCuentaPublica() {
+    const cont = document.getElementById('navbarPublicActions');
+    if (!cont) return;
+    const esStaff = Auth.tieneRol('GERENTE', 'CHEF', 'MESERO');
+    if (Auth.isLoggedIn()) {
+        cont.innerHTML = `
+            ${esStaff ? '<a href="/panel" class="btn btn-ghost btn-sm"><i class="bi bi-speedometer2"></i> Ir al panel</a>' : ''}
+            <span class="navbar-public-user">${escapeHtml(Auth.getUsuario())}</span>
+            <a href="#" class="navbar-public-link" onclick="abrirModalCambiarContrasenia(); return false;">Cuenta</a>
+            <a href="#" class="navbar-public-link" onclick="Auth.logout(); return false;">Salir</a>`;
+    } else {
+        cont.innerHTML = `
+            <a href="/login" class="navbar-public-link">Iniciar sesión</a>
+            <a href="/registro" class="btn btn-primary btn-sm"><i class="bi bi-calendar-check"></i> Reservar</a>`;
+    }
+}
+
 function aplicarVisibilidadPorRol() {
     document.querySelectorAll('[data-rol]').forEach(el => {
         const roles = el.getAttribute('data-rol').split(',');
         el.style.display = Auth.tieneRol(...roles) ? '' : 'none';
     });
+    // El sidebar del panel interno es compartido: un CLIENTE solo llega ahí
+    // via /reservas (unica pagina de gestion a la que tiene acceso), asi que
+    // "Panel interno" no aplica -- el resto de roles si usan el panel.
+    const navLogoSub = document.getElementById('navLogoSub');
+    if (navLogoSub && Auth.tieneRol('CLIENTE') && !Auth.tieneRol('GERENTE', 'CHEF', 'MESERO')) {
+        navLogoSub.textContent = 'Reservas';
+    }
 }
 
 // ─── Modal "Cambiar contraseña" ──────────────────────────────────────────────
@@ -334,6 +374,7 @@ async function enviarCambioContrasenia() {
 // ─── Event listeners globales ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     renderCuenta();
+    renderCuentaPublica();
     aplicarVisibilidadPorRol();
     // Cerrar modal al click fuera
     document.querySelectorAll('.modal-overlay').forEach(overlay => {

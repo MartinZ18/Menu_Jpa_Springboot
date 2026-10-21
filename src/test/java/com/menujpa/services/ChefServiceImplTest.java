@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import com.menujpa.security.MultiRoleUserDetailsService;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
@@ -35,6 +36,7 @@ class ChefServiceImplTest {
     @BeforeEach
     void setUp() {
         chefService = new ChefServiceImpl(baseRepository);
+        chefService.setUsuarios(mock(MultiRoleUserDetailsService.class));
         ReflectionTestUtils.setField(chefService, "chefRepository", chefRepository);
         ReflectionTestUtils.setField(chefService, "recetaRepository", recetaRepository);
     }
@@ -60,6 +62,7 @@ class ChefServiceImplTest {
     @Test
     void save_delegaEnElRepositorio() throws Exception {
         Chef chef = new Chef();
+        chef.setContrasenia("password123");
         when(baseRepository.save(chef)).thenReturn(chef);
 
         assertThat(chefService.save(chef)).isEqualTo(chef);

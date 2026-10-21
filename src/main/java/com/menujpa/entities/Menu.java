@@ -21,7 +21,7 @@ public class Menu extends Base {
     @JoinColumn(name = "idGerente")
     private Gerente gerente;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "menu_receta",
         joinColumns = @JoinColumn(name = "idMenu"),

@@ -6,50 +6,12 @@
     <title>Menús — MenuJPA</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%237D2E3F'/%3E%3Ctext x='32' y='43' font-family='Georgia, serif' font-weight='700' font-size='26' fill='white' text-anchor='middle'%3EMJ%3C/text%3E%3C/svg%3E">
     <link th:href="@{/css/style.css}" rel="stylesheet">
 </head>
 <body>
 
-<div class="topbar">
-    <div class="topbar-logo">
-        <div class="topbar-logo-mark">MJ</div>
-        MenuJPA
-    </div>
-    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menú">
-        <i class="bi bi-list"></i>
-    </button>
-</div>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-<nav class="nav-sidebar">
-    <a href="/" class="nav-logo">
-        <div class="nav-logo-mark">MJ</div>
-        <div class="nav-logo-text">MenuJPA <span>Gestión gastronómica</span></div>
-    </a>
-    <div class="nav-section">
-        <span class="nav-section-label">Gestión</span>
-        <a href="/menus"        class="nav-link active"><i class="bi bi-list-ul"></i><span>Menús</span></a>
-        <a href="/recetas"      class="nav-link"><i class="bi bi-card-list"></i><span>Recetas</span></a>
-        <a href="/alimentos"    class="nav-link"><i class="bi bi-basket"></i><span>Alimentos</span></a>
-        <a href="/ingredientes" class="nav-link" data-rol="GERENTE"><i class="bi bi-egg-fried"></i><span>Ingredientes</span></a>
-        <a href="/despensas"    class="nav-link" data-rol="GERENTE"><i class="bi bi-box-seam"></i><span>Despensas</span></a>
-    </div>
-    <div class="nav-section">
-        <span class="nav-section-label">Personal</span>
-        <a href="/chefs"    class="nav-link" data-rol="GERENTE"><i class="bi bi-person-badge"></i><span>Chefs</span></a>
-        <a href="/meseros"  class="nav-link" data-rol="GERENTE"><i class="bi bi-person-vcard"></i><span>Meseros</span></a>
-        <a href="/gerentes" class="nav-link" data-rol="GERENTE"><i class="bi bi-person-workspace"></i><span>Gerentes</span></a>
-        <a href="/pagos"    class="nav-link" data-rol="GERENTE"><i class="bi bi-cash-coin"></i><span>Pagos</span></a>
-    </div>
-    <div class="nav-section">
-        <span class="nav-section-label">Operaciones</span>
-        <a href="/clientes" class="nav-link" data-rol="GERENTE"><i class="bi bi-people"></i><span>Clientes</span></a>
-        <a href="/mesas"    class="nav-link" data-rol="GERENTE,MESERO"><i class="bi bi-grid-3x3-gap"></i><span>Mesas</span></a>
-        <a href="/pedidos"  class="nav-link" data-rol="GERENTE,MESERO"><i class="bi bi-receipt"></i><span>Pedidos</span></a>
-        <a href="/reservas" class="nav-link" data-rol="GERENTE,MESERO,CLIENTE"><i class="bi bi-calendar-check"></i><span>Reservas</span></a>
-    </div>
-    <div class="nav-cuenta" id="navCuenta"></div>
-</nav>
+<div th:replace="~{fragments/shell-app :: shell(activo='menus')}"></div>
 
 <main class="page-content">
     <header class="page-header">
@@ -194,6 +156,8 @@
 
 <script th:src="@{/js/api.js}"></script>
 <script>
+Auth.requireRoles('GERENTE', 'CHEF');
+
 const API_MENUS    = '/api/v1/menus';
 const API_RECETAS  = '/api/v1/recetas';
 const API_GERENTES = '/api/v1/gerentes';
@@ -222,8 +186,8 @@ async function cargarMenus() {
         const n = m.recetas ? m.recetas.length : 0;
         return `<li class="menu-item" id="btnMenu_${m.id}" onclick="seleccionarMenu(${m.id})">
             <div>
-                <div class="menu-item-name">${m.nombre}</div>
-                <div class="menu-item-sub">${m.gerente ? m.gerente.apellido + ', ' + m.gerente.nombre : 'Sin gerente'}</div>
+                <div class="menu-item-name">${escapeHtml(m.nombre)}</div>
+                <div class="menu-item-sub">${m.gerente ? escapeHtml(m.gerente.apellido) + ', ' + escapeHtml(m.gerente.nombre) : 'Sin gerente'}</div>
             </div>
             <span class="badge badge-accent">${n}</span>
         </li>`;
@@ -274,8 +238,8 @@ function renderRecetasMenu(recetas) {
     lista.innerHTML = recetas.map(r => `
         <li class="receta-item">
             <div>
-                <div class="receta-item-name">${r.nombreReceta}</div>
-                ${r.nombreChefTexto ? `<div class="receta-item-chef">${r.nombreChefTexto}</div>` : ''}
+                <div class="receta-item-name">${escapeHtml(r.nombreReceta)}</div>
+                ${r.nombreChefTexto ? `<div class="receta-item-chef">${escapeHtml(r.nombreChefTexto)}</div>` : ''}
             </div>
             <div class="receta-item-right">
                 ${dificultadBadge(r.dificultad)}
@@ -338,8 +302,8 @@ async function abrirModalAgregarReceta() {
         tbody.innerHTML = disponibles.map(r => `
             <tr>
                 <td><span class="badge badge-default">${r.id}</span></td>
-                <td><strong>${r.nombreReceta}</strong></td>
-                <td>${r.nombreChefTexto || '—'}</td>
+                <td><strong>${escapeHtml(r.nombreReceta)}</strong></td>
+                <td>${escapeHtml(r.nombreChefTexto) || '—'}</td>
                 <td>${dificultadBadge(r.dificultad)}</td>
                 <td>
                     <div class="td-actions">
@@ -378,7 +342,7 @@ async function quitarReceta(recetaId) {
 function confirmarEliminarMenu() {
     if (!menuActual) return;
     document.getElementById('textoConfirmarEliminar').innerHTML =
-        `<p class="confirm-text">¿Eliminar el menú <strong style="color: var(--text-primary)">${menuActual.nombre}</strong>? Esta acción no se puede deshacer.</p>`;
+        `<p class="confirm-text">¿Eliminar el menú <strong style="color: var(--text-primary)">${escapeHtml(menuActual.nombre)}</strong>? Esta acción no se puede deshacer.</p>`;
     document.getElementById('btnConfirmarEliminar').onclick = async () => {
         await apiFetch(`${API_MENUS}/${menuActual.id}`, 'DELETE');
         modalHide('modalEliminarOverlay');

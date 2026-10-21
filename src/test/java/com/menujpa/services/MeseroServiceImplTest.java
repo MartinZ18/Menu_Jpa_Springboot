@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import com.menujpa.security.MultiRoleUserDetailsService;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
@@ -31,6 +32,7 @@ class MeseroServiceImplTest {
     @BeforeEach
     void setUp() {
         meseroService = new MeseroServiceImpl(baseRepository);
+        meseroService.setUsuarios(mock(MultiRoleUserDetailsService.class));
         ReflectionTestUtils.setField(meseroService, "pedidoRepository", pedidoRepository);
     }
 
@@ -56,6 +58,7 @@ class MeseroServiceImplTest {
     void save_delegaEnElRepositorio() throws Exception {
         Mesero mesero = new Mesero();
         mesero.setNombre("Juan");
+        mesero.setContrasenia("password123");
         when(baseRepository.save(mesero)).thenReturn(mesero);
 
         assertThat(meseroService.save(mesero)).isEqualTo(mesero);

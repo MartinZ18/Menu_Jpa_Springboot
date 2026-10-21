@@ -1,6 +1,6 @@
 package com.menujpa.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -37,9 +37,9 @@ public class Persona extends Base {
     @Column(name = "usuario", length = 100)
     private String usuario;
 
-    @Size(max = 255, message = "La contraseña no puede superar 255 caracteres")
+    @Size(min = 8, max = 255, message = "La contraseña debe tener entre 8 y 255 caracteres")
     @Column(name = "contrasenia", length = 255)
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String contrasenia;
 
     @Override
