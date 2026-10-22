@@ -247,7 +247,7 @@ function tipoBadge(tipo) {
 
 function dificultadBadge(d) {
     const map = { 'Fácil': 'badge-success', 'Media': 'badge-warning', 'Difícil': 'badge-error' };
-    return `<span class="badge ${map[d] || 'badge-default'}">${d || '—'}</span>`;
+    return `<span class="badge ${map[d] || 'badge-default'}">${d ? escapeHtml(d) : '—'}</span>`;
 }
 
 // ─── Cuenta / visibilidad por rol ────────────────────────────────────────────

@@ -27,21 +27,24 @@ public class PedidoController {
     @Autowired
     private PedidoServiceImpl pedidoService;
 
-    @Operation(summary = "Listar todos los pedidos")
+    @Operation(summary = "Listar pedidos: todos si sos staff, solo los propios si sos cliente")
     @GetMapping("")
-    public ResponseEntity<?> getAll() {
+    public ResponseEntity<?> getAll(Authentication authentication) {
         try {
-            return ResponseEntity.ok(pedidoService.findAll());
+            var pedidos = esCliente(authentication)
+                ? pedidoService.misPedidos(authentication.getName())
+                : pedidoService.findAll();
+            return ResponseEntity.ok(pedidos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
     }
 
-    @Operation(summary = "Obtener un pedido por id")
+    @Operation(summary = "Obtener un pedido por id (solo si sos staff o un cliente del pedido)")
     @GetMapping("/{id}")
-    public ResponseEntity<?> getOne(@PathVariable Long id) {
+    public ResponseEntity<?> getOne(@PathVariable Long id, Authentication authentication) {
         try {
-            return ResponseEntity.ok(pedidoService.findById(id));
+            return ResponseEntity.ok(pedidoService.obtenerParaUsuario(id, authentication.getName(), esCliente(authentication)));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
@@ -98,6 +101,11 @@ public class PedidoController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
+    }
+
+    private boolean esCliente(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_CLIENTE"));
     }
 
     private boolean esGerente(Authentication authentication) {

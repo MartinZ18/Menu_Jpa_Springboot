@@ -1,5 +1,6 @@
 package com.menujpa.entities;
 
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -19,6 +20,8 @@ public class Menu extends Base {
 
     @ManyToOne
     @JoinColumn(name = "idGerente")
+    // GET /menus es publico: sin esto un visitante anonimo leia cedula, telefono, correo y usuario del gerente.
+    @JsonIncludeProperties({"id", "nombre", "apellido"})
     private Gerente gerente;
 
     @ManyToMany(fetch = FetchType.LAZY)

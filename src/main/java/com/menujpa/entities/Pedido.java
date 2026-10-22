@@ -1,5 +1,6 @@
 package com.menujpa.entities;
 
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -25,6 +26,9 @@ public class Pedido extends Base {
         inverseJoinColumns = @JoinColumn(name = "idCliente")
     )
     @BatchSize(size = 20)
+    // Solo lo que la vista necesita: cualquier usuario autenticado lee pedidos, y sin esto viajaban
+    // cedula, telefono, correo y usuario de cada cliente (y salario del mesero) en la respuesta.
+    @JsonIncludeProperties({"id", "nombre", "apellido"})
     private List<Cliente> clientes = new ArrayList<>();
 
     // Relación con Mesero: miMesero : 1..* en el diagrama
@@ -35,6 +39,7 @@ public class Pedido extends Base {
         inverseJoinColumns = @JoinColumn(name = "idMesero")
     )
     @BatchSize(size = 20)
+    @JsonIncludeProperties({"id", "nombre", "apellido"})
     private List<Mesero> meseros = new ArrayList<>();
 
     // Relación con Alimento: alimentosAdquiridos — composición (diamante lleno en diagrama)

@@ -48,6 +48,28 @@ public class PedidoServiceImpl extends BaseServiceImpl<Pedido, Long> implements 
     }
 
     @Override @Transactional
+    public List<Pedido> misPedidos(String clienteUsuario) throws Exception {
+        try {
+            return pedidoRepository.findByClienteUsuario(clienteUsuario);
+        } catch (Exception e) { throw new Exception(e.getMessage()); }
+    }
+
+    // El staff ve cualquier pedido; un cliente solo los pedidos en los que figura.
+    @Override @Transactional
+    public Pedido obtenerParaUsuario(Long pedidoId, String usuarioSolicitante, boolean esCliente) throws Exception {
+        try {
+            Pedido pedido = baseRepository.findById(pedidoId)
+                .orElseThrow(() -> new Exception("Entidad no encontrada con id: " + pedidoId));
+
+            // Mismo mensaje que un id inexistente: un cliente no puede averiguar que pedidos existen.
+            if (esCliente && pedido.getClientes().stream().noneMatch(c -> usuarioSolicitante.equals(c.getUsuario())))
+                throw new Exception("Entidad no encontrada con id: " + pedidoId);
+
+            return pedido;
+        } catch (Exception e) { throw new Exception(e.getMessage()); }
+    }
+
+    @Override @Transactional
     public Pedido tomarPedido(String meseroUsuario, List<Long> clienteIds, List<Long> alimentoIds) throws Exception {
         try {
             Mesero mesero = meseroRepository.findByUsuario(meseroUsuario)
