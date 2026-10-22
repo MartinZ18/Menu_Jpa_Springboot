@@ -1,5 +1,6 @@
 package com.menujpa.entities;
 
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.ArrayList;
@@ -22,6 +23,8 @@ public class Despensa extends Base {
     // El Gerente administra la Despensa (1..* en diagrama: "Administra")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idGerente")
+    // GET /despensas es publico: mismo criterio que Menu.gerente.
+    @JsonIncludeProperties({"id", "nombre", "apellido"})
     private Gerente gerente;
 
     @Override

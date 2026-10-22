@@ -24,7 +24,8 @@ public class Receta extends Base {
     @Column(name = "tiempo", length = 50)
     private String tiempo;
 
-    @Size(max = 50, message = "La dificultad no puede superar 50 caracteres")
+    // Lista cerrada: el panel pinta este valor como HTML, asi que un texto libre era XSS almacenado.
+    @Pattern(regexp = "^(Fácil|Media|Difícil)$", message = "La dificultad debe ser Fácil, Media o Difícil")
     @Column(name = "dificultad", length = 50)
     private String dificultad;
 
