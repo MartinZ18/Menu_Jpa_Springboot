@@ -2,7 +2,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Java-17-ED8B00?style=flat&logo=openjdk&logoColor=white" />
-  <img src="https://img.shields.io/badge/Spring%20Boot-3.2.5-6DB33F?style=flat&logo=springboot&logoColor=white" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.5.16-6DB33F?style=flat&logo=springboot&logoColor=white" />
   <img src="https://img.shields.io/badge/Spring%20Data%20JPA-6DB33F?style=flat&logo=spring&logoColor=white" />
   <img src="https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat&logo=mysql&logoColor=white" />
   <img src="https://img.shields.io/badge/Thymeleaf-005F0F?style=flat&logo=thymeleaf&logoColor=white" />
@@ -23,7 +23,7 @@ Sistema web para la gestión gastronómica de un restaurante. Permite administra
 
 | Capa | Tecnología |
 |---|---|
-| Backend | Java 17 · Spring Boot 3.2.5 · Spring Data JPA · Hibernate |
+| Backend | Java 17 · Spring Boot 3.5.16 · Spring Data JPA · Hibernate |
 | Base de datos | MySQL 8 |
 | Auth | Spring Security · JWT (jjwt) · BCrypt |
 | Documentación API | springdoc-openapi (Swagger UI) |
